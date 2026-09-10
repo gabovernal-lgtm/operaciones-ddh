@@ -35,6 +35,7 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 <button id="nav-traslado" class="active" onclick="showView('traslado')">Nuevo traslado</button>
 <button id="nav-srm" onclick="showView('srm')">Nuevo SRM</button>
 <button id="nav-devolucion" onclick="showView('devolucion')">Devolución de plataforma</button>
+<button id="nav-minuta" onclick="showView('minuta')">Minuta reuniones</button>
 <button id="nav-historial" onclick="showView('historial')">Historial</button>
 <button id="nav-config" onclick="showView('config')">Configuración de correo</button>
 </nav>
@@ -105,7 +106,7 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 </table>
 </div>
 <div class="grid" style="margin-top:16px"><label>Observaciones generales:</label><textarea id="dObsGeneral"></textarea></div>
-<div class="photo-box"><b>Fotografía opcional:</b><input id="dFoto" type="file" accept="image/*" style="display:block;margin-top:8px"><div class="note">La selección no es obligatoria. Si eliges una fotografía, se integrará automáticamente al PDF de devolución.</div></div>
+<div class="photo-box"><b>Fotografías opcionales (máximo 3):</b><input id="dFoto" type="file" accept="image/*" multiple style="display:block;margin-top:8px"><div class="note">No es obligatorio adjuntar fotografías. Puedes seleccionar entre 1 y 3; todas se integrarán automáticamente al PDF de devolución.</div></div>
 <div class="actions">
 <button class="btn btn-light" onclick="pdfDevolucion()">Generar PDF</button>
 <button class="btn btn-blue" onclick="correoDevolucion()">Abrir en correo para revisar</button>
@@ -114,12 +115,38 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 </div>
 </section>
 
+
+<section id="view-minuta" class="hidden">
+<div class="panel">
+<h2>Minuta de reunión</h2>
+<div class="date-box"><b>Fecha:</b> <span id="mFechaFmt"></span> &nbsp;&nbsp; <b>Hora:</b> <span id="mHoraFmt"></span><div class="note">La fecha y hora se actualizan automáticamente al momento de generar el correo.</div></div>
+<div class="grid">
+<label>Nombre reunión:</label><input id="mNombre" placeholder="Ej.: Reunión Operaciones DDH">
+<label>Participantes:</label><textarea id="mParticipantes" placeholder="Ingrese los participantes de la reunión"></textarea>
+</div>
+
+<h3 class="section-title">Compromisos / acuerdos</h3>
+<div class="dev-scroll">
+<table class="dev-table" style="min-width:880px">
+<thead><tr><th class="n">N°</th><th>Compromiso / acuerdo</th><th style="width:220px">Responsable</th><th style="width:170px">Fecha compromiso</th></tr></thead>
+<tbody id="minutaRows"></tbody>
+</table>
+</div>
+
+<div class="actions">
+<button class="btn btn-blue" onclick="correoMinuta()">Generar mail</button>
+<button class="btn btn-white" onclick="limpiarMinuta()">Limpiar</button>
+</div>
+<div class="note">El correo de Minuta utiliza destinatarios propios, configurables en “Configuración de correo”.</div>
+</div>
+</section>
+
 <section id="view-historial" class="hidden">
 <div class="panel">
 <h2>Historial de operaciones</h2>
 <div class="toolbar">
 <button class="btn btn-light" onclick="cargarHistorial()">Actualizar historial</button>
-<select id="hTipo" onchange="renderHistorial()"><option value="">Todos los tipos</option><option>TRASLADO</option><option>SRM</option><option>DEVOLUCIÓN</option></select>
+<select id="hTipo" onchange="renderHistorial()"><option value="">Todos los tipos</option><option>TRASLADO</option><option>SRM</option><option>DEVOLUCIÓN</option><option>MINUTA</option></select>
 <input id="hBuscar" placeholder="Buscar pozo, equipo, sector..." oninput="renderHistorial()" style="min-width:280px">
 </div>
 <div id="historialEstado" class="note"></div>
@@ -130,12 +157,18 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 <section id="view-config" class="hidden">
 <div class="panel">
 <h2>Configuración de correo</h2>
+<h3 class="section-title" style="margin-top:0">Traslado / SRM / Devolución</h3>
 <div class="grid">
 <label>Para:</label><input id="cPara">
 <label>CC:</label><input id="cCC">
 </div>
+<h3 class="section-title">Minuta de reuniones</h3>
+<div class="grid">
+<label>Para minuta:</label><input id="cParaMinuta" placeholder="Correos Geotec">
+<label>CC minuta:</label><input id="cCCMinuta" placeholder="Opcional">
+</div>
 <div class="actions"><button class="btn btn-blue" onclick="guardarConfig()">Guardar configuración</button></div>
-<div class="note">La configuración queda guardada en este navegador.</div>
+<div class="note">Ambas configuraciones quedan guardadas en este navegador.</div>
 </div>
 </section>
 
@@ -166,18 +199,23 @@ function hoyISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMont
 function fechaCorta(iso){if(!iso)return"";const p=iso.split("-");return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:iso}
 function fechaHoy(){return fechaCorta(hoyISO())}
 function showView(v){
-["traslado","srm","devolucion","historial","config"].forEach(x=>{$("view-"+x).classList.toggle("hidden",x!==v);$("nav-"+x)?.classList.toggle("active",x===v)});
+["traslado","srm","devolucion","minuta","historial","config"].forEach(x=>{$("view-"+x).classList.toggle("hidden",x!==v);$("nav-"+x)?.classList.toggle("active",x===v)});
 if(v==="historial")cargarHistorial();
 }
 function init(){
 $("tFecha").value=hoyISO();$("tFechaFmt").textContent=fechaCorta($("tFecha").value);$("tFecha").addEventListener("change",()=>$("tFechaFmt").textContent=fechaCorta($("tFecha").value));
 $("dFechaFmt").textContent=fechaHoy();
+actualizarFechaHoraMinuta();
 $("cPara").value=localStorage.getItem("ddh_para")||"GVERNAL@GEOTEC.CL";
 $("cCC").value=localStorage.getItem("ddh_cc")||"dmiranda@geotec.cl; CAEDO@GEOTEC.CL";
+$("cParaMinuta").value=localStorage.getItem("ddh_para_minuta")||"";
+$("cCCMinuta").value=localStorage.getItem("ddh_cc_minuta")||"";
 $("devRows").innerHTML=preguntas.map((q,i)=>`<tr><td class="n">${i+1}</td><td>${esc(q)}</td><td><select class="table-input" id="dCumple${i+1}"><option></option><option${i<5?" selected":""}>Sí</option><option>No</option><option${i===5?" selected":""}>N/A</option></select></td><td><input class="table-input" id="dObs${i+1}"></td></tr>`).join("");
+$("minutaRows").innerHTML=Array.from({length:20},(_,i)=>`<tr><td class="n">${i+1}</td><td><input class="table-input" id="mComp${i+1}" placeholder="Compromiso o acuerdo"></td><td><input class="table-input" id="mResp${i+1}" placeholder="Responsable"></td><td><input class="table-input" id="mFecha${i+1}" type="date"></td></tr>`).join("");
+$("dFoto").addEventListener("change",function(){if(this.files.length>3){alert("Puede seleccionar un máximo de 3 fotografías.");this.value="";}});
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
-function guardarConfig(){localStorage.setItem("ddh_para",val("cPara"));localStorage.setItem("ddh_cc",val("cCC"));setStatus("Configuración de correo guardada en este navegador.")}
+function guardarConfig(){localStorage.setItem("ddh_para",val("cPara"));localStorage.setItem("ddh_cc",val("cCC"));localStorage.setItem("ddh_para_minuta",val("cParaMinuta"));localStorage.setItem("ddh_cc_minuta",val("cCCMinuta"));setStatus("Configuración de correo guardada en este navegador.")}
 function mailto(subject,body){
 const para=val("cPara");const cc=val("cCC");
 const url=`mailto:${encodeURIComponent(para)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -239,6 +277,51 @@ mailto(`Devolución plataforma ${d.pozo} - equipo ${d.equipo}`,
 `Estimados:\n\nJunto con saludar, adjunto documento de entrega de la plataforma del pozo ${d.pozo}, del sector ${d.sector}, construido por el equipo ${d.equipo}.\n\nQuedamos atentos a sus comentarios.\n\nATTE.\nDEPARTAMENTO OPERACIONES DDH`);
 }
 function limpiarDevolucion(){["dPozo","dEquipo","dSector","dSupervisor","dJefe","dObsGeneral"].forEach(x=>$(x).value="");for(let i=1;i<=6;i++){ $("dCumple"+i).value=(i<=5?"Sí":"N/A");$("dObs"+i).value="" }$("dFoto").value="";$("dFechaFmt").textContent=fechaHoy();setStatus("Formulario de devolución limpio.")}
+
+
+function mailtoMinuta(subject,body){
+ const para=val("cParaMinuta")||localStorage.getItem("ddh_para_minuta")||"";
+ const cc=val("cCCMinuta")||localStorage.getItem("ddh_cc_minuta")||"";
+ if(!para){alert("Configure primero el destinatario de Minuta en “Configuración de correo”.");showView("config");$("cParaMinuta").focus();return false}
+ const url=`mailto:${encodeURIComponent(para)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+ window.location.href=url; return true;
+}
+function horaCortaAhora(){const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function actualizarFechaHoraMinuta(){
+ if($("mFechaFmt")) $("mFechaFmt").textContent=fechaHoy();
+ if($("mHoraFmt")) $("mHoraFmt").textContent=horaCortaAhora();
+}
+function compromisosMinuta(){
+ const arr=[];
+ for(let i=1;i<=20;i++){
+   const c=val("mComp"+i),r=val("mResp"+i),f=val("mFecha"+i);
+   if(c||r||f) arr.push({n:i,compromiso:c,responsable:r,fecha:f?fechaCorta(f):""});
+ }
+ return arr;
+}
+async function correoMinuta(){
+ actualizarFechaHoraMinuta();
+ if(!req([["mNombre","Nombre reunión"],["mParticipantes","Participantes"]]))return;
+ const nombre=val("mNombre"), participantes=val("mParticipantes"), fecha=fechaHoy(), hora=horaCortaAhora();
+ const acuerdos=compromisosMinuta();
+ if(!acuerdos.length){alert("Ingrese al menos un compromiso o acuerdo.");return}
+ const sep="────────────────────────────────────────";
+ const bloques=acuerdos.map((a,idx)=>{
+   return `${idx+1}. COMPROMISO / ACUERDO:\n${a.compromiso||"-"}\nRESPONSABLE: ${a.responsable||"-"}\nFECHA COMPROMISO: ${a.fecha||"-"}`;
+ }).join(`\n${sep}\n`);
+ const asunto=`MINUTA REUNION ${nombre} - ${fecha} - ${hora}`;
+ const cuerpo=`Estimados:\n\nJunto con saludar, se les ruega revisar más abajo los acuerdos y compromisos tomados en la reunión ${nombre}.\n\nPARTICIPANTES:\n${participantes}\n\n${sep}\nACUERDOS Y COMPROMISOS\n${sep}\n${bloques}\n${sep}\n\nSaludos,\nDEPARTAMENTO OPERACIONES DDH`;
+ const detalle=acuerdos.map(a=>`${a.n}) ${a.compromiso||"-"} | Responsable: ${a.responsable||"-"} | Fecha: ${a.fecha||"-"}`).join(" || ");
+ try{
+   await guardarOnline({tipo:"MINUTA",fecha,equipo:"",pozo:nombre,sector_origen:"",sector_destino:"",sector:"",supervisor:"",jefe_faena:"",detalle:`Hora: ${hora} | Participantes: ${participantes} | ${detalle}`,estado:"Correo abierto para revisión",identificador:identificador("MINUTA",fecha,hora,nombre)});
+ }catch(e){}
+ if(mailtoMinuta(asunto,cuerpo)) setStatus("Minuta guardada en historial online. Abriendo borrador de correo.");
+}
+function limpiarMinuta(){
+ $("mNombre").value="";$("mParticipantes").value="";
+ for(let i=1;i<=20;i++){ $("mComp"+i).value="";$("mResp"+i).value="";$("mFecha"+i).value="" }
+ actualizarFechaHoraMinuta(); setStatus("Minuta limpia.");
+}
 
 async function cargarHistorial(){
 $("historialEstado").textContent="Cargando historial online...";
@@ -384,32 +467,41 @@ y+=32;doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.text("Repr
 doc.autoTable({startY:y+3,theme:"grid",body:[["Firma Digitalmente:",d.supervisor,"Cargo","SUPERVISOR"]],styles:{fontSize:8,cellPadding:2},columnStyles:{0:{fontStyle:"bold",fillColor:[248,250,252]},2:{fontStyle:"bold",fillColor:[248,250,252]}}});
 y=doc.lastAutoTable.finalY+6;doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.text("Representante del CMDIC",14,y);
 doc.autoTable({startY:y+3,theme:"grid",body:[["Nombre","","Cargo",""],["Firma","","",""]],styles:{fontSize:8,cellPadding:3},columnStyles:{0:{fontStyle:"bold",fillColor:[248,250,252]},2:{fontStyle:"bold",fillColor:[248,250,252]}}});
-// Fotografía opcional integrada al PDF
-const fotoFile=$("dFoto").files && $("dFoto").files[0] ? $("dFoto").files[0] : null;
-if(fotoFile){
-  try{
-    const fotoData=await leerImagenArchivo(fotoFile);
-    const dim=await dimensionesImagen(fotoData);
-    let fy=doc.lastAutoTable.finalY+8;
-    const maxW=170, maxH=95;
-    let fw=maxW, fh=fw*(dim.h/dim.w);
-    if(fh>maxH){fh=maxH;fw=fh*(dim.w/dim.h)}
-    if(fy+fh+15>285){doc.addPage();fy=18}
-    doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(10);
-    doc.text("REGISTRO FOTOGRÁFICO",105,fy,{align:"center"});
-    fy+=5;
-    const fx=(210-fw)/2;
-    doc.setDrawColor(180,190,200);
-    doc.rect(fx-1,fy-1,fw+2,fh+2);
-    const fmt=(fotoFile.type||"").toLowerCase().includes("png")?"PNG":"JPEG";
-    doc.addImage(fotoData,fmt,fx,fy,fw,fh);
-  }catch(e){
-    console.error(e);
-    alert("El PDF se generará sin la fotografía porque no fue posible procesarla.");
+// Fotografías opcionales integradas al PDF (máximo 3)
+const fotoFiles=Array.from(($("dFoto").files||[]));
+if(fotoFiles.length>3){
+  alert("Puede adjuntar un máximo de 3 fotografías.");
+  return;
+}
+if(fotoFiles.length){
+  for(let fi=0;fi<fotoFiles.length;fi++){
+    const fotoFile=fotoFiles[fi];
+    try{
+      const fotoData=await leerImagenArchivo(fotoFile);
+      const dim=await dimensionesImagen(fotoData);
+      let fy=doc.lastAutoTable.finalY+8;
+      if(fi>0) fy=18;
+      const maxW=170, maxH=95;
+      let fw=maxW, fh=fw*(dim.h/dim.w);
+      if(fh>maxH){fh=maxH;fw=fh*(dim.w/dim.h)}
+      if(fi===0 && fy+fh+15>285){doc.addPage();fy=18}
+      if(fi>0){doc.addPage();fy=18}
+      doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(10);
+      doc.text(`REGISTRO FOTOGRÁFICO ${fi+1} DE ${fotoFiles.length}`,105,fy,{align:"center"});
+      fy+=5;
+      const fx=(210-fw)/2;
+      doc.setDrawColor(180,190,200);
+      doc.rect(fx-1,fy-1,fw+2,fh+2);
+      const fmt=(fotoFile.type||"").toLowerCase().includes("png")?"PNG":"JPEG";
+      doc.addImage(fotoData,fmt,fx,fy,fw,fh);
+    }catch(e){
+      console.error(e);
+      alert(`No fue posible integrar la fotografía ${fi+1}. El PDF continuará con las demás.`);
+    }
   }
 }
 doc.save(`DEVOLUCION_PLATAFORMA_${d.pozo.replace(/[\\/:*?"<>|]/g,"_")}_${d.equipo.replace(/[\\/:*?"<>|]/g,"_")}.pdf`);
-setStatus(fotoFile?"PDF de devolución generado con fotografía integrada.":"PDF de devolución generado.");
+setStatus(fotoFiles.length?`PDF de devolución generado con ${fotoFiles.length} fotografía(s) integrada(s).`:"PDF de devolución generado.");
 }
 init();
 </script>

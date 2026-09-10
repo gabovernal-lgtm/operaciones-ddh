@@ -45,3 +45,13 @@ La clave incorporada es la **Publishable key** de Supabase. No se incluye ningun
 ## v1.4
 - La fotografía opcional de Devolución de plataforma ahora se integra automáticamente al PDF.
 - Se conserva su proporción y se agrega bajo el documento o en una página nueva si no cabe.
+
+## v1.7
+- Devolución: fotografías opcionales, máximo 3, integradas automáticamente al PDF.
+- Nueva función: Minuta de reuniones.
+- Fecha y hora automáticas al generar el correo.
+- Nombre de reunión y participantes.
+- 20 líneas para Compromiso / Acuerdo, Responsable y Fecha compromiso.
+- Destinatarios de Minuta configurables por separado de los correos al cliente.
+- Asunto corto automático y cuerpo con separadores claros entre compromisos.
+- Minutas también se registran en el historial online.
