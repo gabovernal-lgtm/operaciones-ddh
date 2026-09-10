@@ -105,7 +105,7 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 </table>
 </div>
 <div class="grid" style="margin-top:16px"><label>Observaciones generales:</label><textarea id="dObsGeneral"></textarea></div>
-<div class="photo-box"><b>Fotografía opcional:</b><input id="dFoto" type="file" accept="image/*" style="display:block;margin-top:8px"><div class="note">La selección no es obligatoria. En web la fotografía deberá adjuntarse manualmente al correo.</div></div>
+<div class="photo-box"><b>Fotografía opcional:</b><input id="dFoto" type="file" accept="image/*" style="display:block;margin-top:8px"><div class="note">La selección no es obligatoria. Si eliges una fotografía, se integrará automáticamente al PDF de devolución.</div></div>
 <div class="actions">
 <button class="btn btn-light" onclick="pdfDevolucion()">Generar PDF</button>
 <button class="btn btn-blue" onclick="correoDevolucion()">Abrir en correo para revisar</button>
@@ -174,7 +174,7 @@ $("tFecha").value=hoyISO();$("tFechaFmt").textContent=fechaCorta($("tFecha").val
 $("dFechaFmt").textContent=fechaHoy();
 $("cPara").value=localStorage.getItem("ddh_para")||"GVERNAL@GEOTEC.CL";
 $("cCC").value=localStorage.getItem("ddh_cc")||"dmiranda@geotec.cl; CAEDO@GEOTEC.CL";
-$("devRows").innerHTML=preguntas.map((q,i)=>`<tr><td class="n">${i+1}</td><td>${esc(q)}</td><td><select class="table-input" id="dCumple${i+1}"><option></option><option>Sí</option><option>No</option><option>N/A</option></select></td><td><input class="table-input" id="dObs${i+1}"></td></tr>`).join("");
+$("devRows").innerHTML=preguntas.map((q,i)=>`<tr><td class="n">${i+1}</td><td>${esc(q)}</td><td><select class="table-input" id="dCumple${i+1}"><option></option><option${i<5?" selected":""}>Sí</option><option>No</option><option${i===5?" selected":""}>N/A</option></select></td><td><input class="table-input" id="dObs${i+1}"></td></tr>`).join("");
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
 function guardarConfig(){localStorage.setItem("ddh_para",val("cPara"));localStorage.setItem("ddh_cc",val("cCC"));setStatus("Configuración de correo guardada en este navegador.")}
@@ -238,7 +238,7 @@ setStatus("Devolución guardada en historial online. Abriendo borrador de correo
 mailto(`Devolución plataforma ${d.pozo} - equipo ${d.equipo}`,
 `Estimados:\n\nJunto con saludar, adjunto documento de entrega de la plataforma del pozo ${d.pozo}, del sector ${d.sector}, construido por el equipo ${d.equipo}.\n\nQuedamos atentos a sus comentarios.\n\nATTE.\nDEPARTAMENTO OPERACIONES DDH`);
 }
-function limpiarDevolucion(){["dPozo","dEquipo","dSector","dSupervisor","dJefe","dObsGeneral"].forEach(x=>$(x).value="");for(let i=1;i<=6;i++){ $("dCumple"+i).value="";$("dObs"+i).value="" }$("dFoto").value="";$("dFechaFmt").textContent=fechaHoy();setStatus("Formulario de devolución limpio.")}
+function limpiarDevolucion(){["dPozo","dEquipo","dSector","dSupervisor","dJefe","dObsGeneral"].forEach(x=>$(x).value="");for(let i=1;i<=6;i++){ $("dCumple"+i).value=(i<=5?"Sí":"N/A");$("dObs"+i).value="" }$("dFoto").value="";$("dFechaFmt").textContent=fechaHoy();setStatus("Formulario de devolución limpio.")}
 
 async function cargarHistorial(){
 $("historialEstado").textContent="Cargando historial online...";
@@ -263,23 +263,112 @@ doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(11);
 function pdfTraslado(){
 if(!req([["tFecha","Fecha"],["tTurno","Turno"],["tEquipo","Equipo"],["tOrigen","Sector de origen"],["tDestino","Sector de destino"],["tSupervisor","Supervisor"],["tJefe","Jefe de faena"]]))return;
 if(!pdfReady())return fallbackPrint();
-const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"}),d=datosTraslado();pdfHeader(doc,"SOLICITUD DE TRASLADO DE EQUIPO");
-doc.autoTable({startY:39,theme:"grid",styles:{fontSize:8,cellPadding:2},headStyles:{fillColor:[238,244,250],textColor:[21,63,109]},body:[
-["FECHA",d.fecha,"TURNO",d.turno],["ORIGEN",d.origen,"DESTINO",d.destino],["EQUIPO",d.equipo,"CAMIONETA ESCOLTA",d.camioneta],["SUPERVISOR",d.supervisor,"JEFE DE FAENA",d.jefe],["CONDUCTOR SONDA",d.conductorSonda,"CONDUCTOR ESCOLTA",d.conductorEscolta]
-]});
-let y=doc.lastAutoTable.finalY+7;
-doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.text("CONTROLES EQUIPO SONDA",14,y);y+=3;
-const eq=[
-["Atrapamiento por condiciones del camino","Evaluación de entorno, conducción a la defensiva, atención a la frecuencia radial, detención de la actividad."],
-["Colisión por baja visibilidad","Evaluación del entorno, no realizar el movimiento existiendo condiciones que impidan la visibilidad."],
-["Condiciones climáticas","Chequeo de condiciones climáticas, evaluación del entorno y caminos post condición climática, atención a frecuencia radial, autorización de geólogo."],
-["Volcamiento, atropello, choque y colisión","Check list de equipo, Fatiga y somnolencia, evaluación del entorno, respetar velocidades, manejo a la defensiva, conocimiento del circuito mina y atención constante de frecuencia radial. El reconocimiento de la ruta previo al traslado es OBLIGATORIO. Se debe asegurar que los equipos de comunicación funcionen."]
-];
-doc.autoTable({startY:y,theme:"grid",head:[["Riesgo","Control"]],body:eq,styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[238,244,250],textColor:[21,63,109]}});
-y=doc.lastAutoTable.finalY+7;doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.text("CONTROLES ADICIONALES",14,y);doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.text(d.controles||"Sin controles adicionales.",14,y+5,{maxWidth:180});
-doc.save(`SOLICITUD_TRASLADO_EQUIPO_${d.equipo.replace(/[\\/:*?"<>|]/g,"_")}.pdf`);setStatus("PDF de traslado generado.");
+const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"}),d=datosTraslado();
+
+const x=19, w=172;
+try{doc.addImage(LOGO_GEOTEC,"PNG",5,5,36,18)}catch(e){}
+try{doc.addImage(LOGO_COLLAHUASI,"PNG",154,5,35,18)}catch(e){}
+
+doc.setDrawColor(70,70,70);
+doc.setFillColor(225,225,225);
+doc.rect(x,27,w,6,"FD");
+doc.setFont("helvetica","bold");
+doc.setFontSize(8);
+doc.setTextColor(0,0,0);
+doc.text("SOLICITUD AUTORIZACION DE TRASLADO DE EQUIPO SONDA",105,31,{align:"center"});
+
+doc.autoTable({
+ startY:38,
+ margin:{left:x,right:19},
+ theme:"grid",
+ tableWidth:110,
+ styles:{fontSize:6.5,cellPadding:1.1,lineColor:[80,80,80],lineWidth:.15,textColor:[0,0,0]},
+ body:[
+  ["FECHA:",d.fecha,"TURNO:",d.turno],
+  ["ORIGEN:",d.origen,"DESTINO:",d.destino],
+  ["EQUIPO SONDA A TRASLADAR",d.equipo,"CAMIONETA ESCOLTA",d.camioneta],
+  ["SUPERVISOR A CARGO:",d.supervisor,"CONDUCTOR SONDA:",d.conductorSonda],
+  ["CONDUCTOR ESCOLTA:",d.conductorEscolta,"JEFE DE FAENA:",d.jefe]
+ ],
+ columnStyles:{0:{cellWidth:40,fillColor:[235,235,235]},1:{cellWidth:28},2:{cellWidth:40,fillColor:[235,235,235]},3:{cellWidth:28}}
+});
+
+let y=doc.lastAutoTable.finalY+6;
+function sectionBar(title){
+ doc.setFillColor(225,225,225);doc.setDrawColor(70,70,70);
+ doc.rect(x,y,w,5.5,"FD");
+ doc.setFont("helvetica","bold");doc.setFontSize(7.2);doc.text(title,105,y+3.8,{align:"center"});
+ y+=5.5;
 }
-function pdfDevolucion(){
+
+sectionBar("CONTROLES EQUIPO SONDA");
+const obsSonda="Chequeo de puntos críticos (estado de neumáticos - torque en neumáticos - luces traseras/delanteras - frenos - dirección - niveles - estructura).\\n\\nSe debe confirmar la mantención y torque al día del equipo a trasladar.\\n\\nSe debe revisar que toda la documentación está al día, Supervisor debe visar toda la documentación y planificación antes de iniciar la maniobra.\\n\\nSUPERVISOR DEBE GENERAR GRT ASOCIADO A LA ACTIVIDAD Y ENVIAR RESPALDO.";
+const eq=[
+ ["Atrapamiento por condiciones del camino","Evaluación de entorno,\\nconducción a la defensiva,\\natención a la frecuencia radial,\\ndetención de la actividad.",{content:obsSonda,rowSpan:4}],
+ ["Colisión por baja visibilidad","Evaluación del entorno, no realizar el movimiento existiendo condiciones que impidan la visibilidad."],
+ ["Condiciones climáticas","Chequeo de condiciones climáticas, evaluación del entorno y caminos post condición climática, atención a frecuencia radial, autorización de geólogo"],
+ ["Volcamiento, atropello, choque y colisión","Check list de equipo, Fatiga y somnolencia, evaluación del entorno, respetar velocidades, manejo a la defensiva, conocimiento del circuito mina y atención constante de frecuencia radial.\\nEl reconocimiento de la ruta previo al traslado es OBLIGATORIO.\\nSe debe asegurar que los equipos de comunicación funcionen"]
+];
+doc.autoTable({
+ startY:y,margin:{left:x,right:19},tableWidth:w,theme:"grid",
+ head:[["RIESGOS ASOCIADOS","MEDIDA DE CONTROL","OBSERVACIONES"]],
+ body:eq,
+ styles:{fontSize:5.65,cellPadding:1.05,lineColor:[70,70,70],lineWidth:.15,overflow:"linebreak",valign:"middle",textColor:[0,0,0]},
+ headStyles:{fillColor:[225,225,225],textColor:[0,0,0],fontStyle:"bold",halign:"center"},
+ columnStyles:{0:{cellWidth:50},1:{cellWidth:52},2:{cellWidth:70}}
+});
+y=doc.lastAutoTable.finalY+4;
+
+sectionBar("CONTROLES CAMIONETA ESCOLTA");
+const obsEscolta="Chequeo de puntos críticos (estado de neumáticos - torque en neumáticos - luces traseras/delanteras - frenos - dirección - niveles - estructura).\\n\\nSe debe confirmar la mantención y torque al día del equipo a trasladar.\\n\\nSe debe revisar que toda la documentación está al día, Supervisor debe visar toda la documentación y planificación antes de iniciar la maniobra.";
+const escolta=[
+ ["Volcamiento, atropello, choque y colisión","Check list de camioneta, Fatiga y somnolencia, evaluación del entorno, respetar velocidades, manejo a la defensiva, conocimiento del circuito mina y atención constante de frecuencia radial.",{content:obsEscolta,rowSpan:6}],
+ ["Colisión por baja visibilidad","Evaluación del entorno, no realizar el movimiento existiendo condiciones que impidan la visibilidad."],
+ ["Condiciones climáticas","Chequeo de condiciones climáticas, evaluación del entorno y caminos post condición climática, atención de frecuencia radial, autorización de geólogo senior del turno."],
+ ["Atrapamiento por condiciones del camino","Evaluación de entorno, conducción a la defensiva, atención a la frecuencia radial, detención de la actividad."],
+ ["Interacción con equipos de apoyo","Aviso radial previo al traslado."],
+ ["Atricción de manos por cierre de barandas de camión sonda.","Chequeo y aplicación de controles en la instalación de letrero escolta y baliza, 3 puntos de apoyo siempre."]
+];
+doc.autoTable({
+ startY:y,margin:{left:x,right:19},tableWidth:w,theme:"grid",
+ head:[["RIESGOS ASOCIADOS","MEDIDA DE CONTROL","OBSERVACIONES"]],
+ body:escolta,
+ styles:{fontSize:5.35,cellPadding:.9,lineColor:[70,70,70],lineWidth:.15,overflow:"linebreak",valign:"middle",textColor:[0,0,0]},
+ headStyles:{fillColor:[225,225,225],textColor:[0,0,0],fontStyle:"bold",halign:"center"},
+ columnStyles:{0:{cellWidth:50},1:{cellWidth:52},2:{cellWidth:70}}
+});
+y=doc.lastAutoTable.finalY+4;
+
+sectionBar("CONTROLES ADICIONALES");
+doc.autoTable({
+ startY:y,margin:{left:x,right:19},tableWidth:w,theme:"grid",
+ body:[[d.controles||""]],
+ styles:{fontSize:6.2,cellPadding:2.2,lineColor:[70,70,70],lineWidth:.15,minCellHeight:14,halign:"center",valign:"middle",textColor:[0,0,0]}
+});
+
+doc.save(`SOLICITUD_TRASLADO_EQUIPO_${d.equipo.replace(/[\\/:*?"<>|]/g,"_")}.pdf`);
+setStatus("PDF de traslado generado con el formato de referencia.");
+}
+
+function leerImagenArchivo(file){
+ return new Promise((resolve,reject)=>{
+   if(!file){resolve(null);return}
+   const reader=new FileReader();
+   reader.onload=()=>resolve(reader.result);
+   reader.onerror=()=>reject(new Error("No se pudo leer la fotografía."));
+   reader.readAsDataURL(file);
+ });
+}
+function dimensionesImagen(dataUrl){
+ return new Promise((resolve,reject)=>{
+   const img=new Image();
+   img.onload=()=>resolve({w:img.naturalWidth||img.width,h:img.naturalHeight||img.height});
+   img.onerror=()=>reject(new Error("No se pudo procesar la fotografía."));
+   img.src=dataUrl;
+ });
+}
+
+async function pdfDevolucion(){
 if(!req([["dPozo","Pozo"],["dEquipo","Equipo de perforación"],["dSector","Sector"],["dSupervisor","Supervisor"],["dJefe","Jefe de faena"]]))return;
 for(let i=1;i<=6;i++){if(!val("dCumple"+i)){alert(`Seleccione Sí, No o N/A en la verificación ${i}.`);return}}
 if(!pdfReady())return fallbackPrint();
@@ -295,7 +384,32 @@ y+=32;doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.text("Repr
 doc.autoTable({startY:y+3,theme:"grid",body:[["Nombre",d.supervisor,"Cargo","Supervisor"],["Firma","","",""]],styles:{fontSize:8,cellPadding:2},columnStyles:{0:{fontStyle:"bold",fillColor:[248,250,252]},2:{fontStyle:"bold",fillColor:[248,250,252]}}});
 y=doc.lastAutoTable.finalY+6;doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.text("Representante del CMDIC",14,y);
 doc.autoTable({startY:y+3,theme:"grid",body:[["Nombre","","Cargo",""],["Firma","","",""]],styles:{fontSize:8,cellPadding:3},columnStyles:{0:{fontStyle:"bold",fillColor:[248,250,252]},2:{fontStyle:"bold",fillColor:[248,250,252]}}});
-doc.save(`DEVOLUCION_PLATAFORMA_${d.pozo.replace(/[\\/:*?"<>|]/g,"_")}_${d.equipo.replace(/[\\/:*?"<>|]/g,"_")}.pdf`);setStatus("PDF de devolución generado.");
+// Fotografía opcional integrada al PDF
+const fotoFile=$("dFoto").files && $("dFoto").files[0] ? $("dFoto").files[0] : null;
+if(fotoFile){
+  try{
+    const fotoData=await leerImagenArchivo(fotoFile);
+    const dim=await dimensionesImagen(fotoData);
+    let fy=doc.lastAutoTable.finalY+8;
+    const maxW=170, maxH=95;
+    let fw=maxW, fh=fw*(dim.h/dim.w);
+    if(fh>maxH){fh=maxH;fw=fh*(dim.w/dim.h)}
+    if(fy+fh+15>285){doc.addPage();fy=18}
+    doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(10);
+    doc.text("REGISTRO FOTOGRÁFICO",105,fy,{align:"center"});
+    fy+=5;
+    const fx=(210-fw)/2;
+    doc.setDrawColor(180,190,200);
+    doc.rect(fx-1,fy-1,fw+2,fh+2);
+    const fmt=(fotoFile.type||"").toLowerCase().includes("png")?"PNG":"JPEG";
+    doc.addImage(fotoData,fmt,fx,fy,fw,fh);
+  }catch(e){
+    console.error(e);
+    alert("El PDF se generará sin la fotografía porque no fue posible procesarla.");
+  }
+}
+doc.save(`DEVOLUCION_PLATAFORMA_${d.pozo.replace(/[\\/:*?"<>|]/g,"_")}_${d.equipo.replace(/[\\/:*?"<>|]/g,"_")}.pdf`);
+setStatus(fotoFile?"PDF de devolución generado con fotografía integrada.":"PDF de devolución generado.");
 }
 init();
 </script>

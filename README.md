@@ -25,3 +25,23 @@ Un navegador no puede adjuntar por sí solo archivos locales a Outlook mediante 
 3. Adjunta el PDF descargado y, si corresponde, la fotografía.
 
 La clave incorporada es la **Publishable key** de Supabase. No se incluye ninguna Secret key.
+
+
+## v1.1
+- Se restituyeron en el PDF de Traslado los **CONTROLES CAMIONETA ESCOLTA** del formato anterior.
+- Se restituyó la columna **OBSERVACIONES** tanto para Equipo Sonda como para Camioneta Escolta.
+- No se modificaron SRM, Devolución ni Historial.
+
+
+## v1.2
+- PDF de Traslado ajustado contra el PDF de referencia del usuario.
+- Título exacto: SOLICITUD AUTORIZACION DE TRASLADO DE EQUIPO SONDA.
+- Etiquetas y estructura superior ajustadas.
+- CONTROLES EQUIPO SONDA: 4 riesgos + observaciones en bloque.
+- CONTROLES CAMIONETA ESCOLTA: 6 riesgos + observaciones en bloque.
+- CONTROLES ADICIONALES en recuadro final.
+
+
+## v1.4
+- La fotografía opcional de Devolución de plataforma ahora se integra automáticamente al PDF.
+- Se conserva su proporción y se agrega bajo el documento o en una página nueva si no cabe.
