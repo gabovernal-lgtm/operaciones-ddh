@@ -36,7 +36,8 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 <button id="nav-srm" onclick="showView('srm')">Nuevo SRM</button>
 <button id="nav-devolucion" onclick="showView('devolucion')">Devolución de plataforma</button>
 <button id="nav-minuta" onclick="showView('minuta')">Minuta reuniones</button>
-<button id="nav-reparacion" onclick="showView('reparacion')">Reparación camioneta</button>
+<button id="nav-reparacion" onclick="showView('reparacion')">Reparación / mantención camioneta</button>
+<button id="nav-flota" onclick="showView('flota')">Equipos Flota / Sondas</button>
 <button id="nav-historial" onclick="showView('historial')">Historial</button>
 <button id="nav-config" onclick="showView('config')">Configuración de correo</button>
 </nav>
@@ -144,15 +145,15 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 
 <section id="view-reparacion" class="hidden">
 <div class="panel">
-<h2>Solicitud de reparación de camioneta</h2>
+<h2>Reparación / mantención camioneta</h2>
 <div class="date-box"><b>Fecha:</b> <span id="rFechaFmt"></span><div class="note">La fecha se completa automáticamente al momento de generar la solicitud.</div></div>
 <div class="grid">
 <label>N° interno:</label><input id="rInterno" placeholder="Ej.: 1692">
 <label>Patente:</label><input id="rPatente" placeholder="Ej.: AB-CD-12">
-<label>Km actual:</label><input id="rKmActual" type="number" min="0" step="1" placeholder="Obligatorio">
-<label>Km próxima mantención:</label><input id="rKmMantencion" type="number" min="0" step="1" placeholder="Opcional">
+<label>Kilometraje / Horómetro actual:</label><input id="rKmActual" type="number" min="0" step="1" placeholder="Obligatorio">
+<label>Kilometraje / Horómetro próxima mantención:</label><input id="rKmMantencion" type="number" min="0" step="1" placeholder="Opcional">
 <div id="rKmRestante" class="note" style="grid-column:1/-1"></div>
-<label>Detalles por reparar:</label><textarea id="rDetalles" placeholder="Describa los trabajos o fallas que requieren reparación"></textarea>
+<label>Detalles reparación / mantención:</label><textarea id="rDetalles" placeholder="Describa los trabajos, fallas o mantenciones requeridas"></textarea>
 </div>
 <div class="photo-box"><b>Registro fotográfico opcional (máximo 6):</b><input id="rFotos" type="file" accept="image/*" multiple style="display:block;margin-top:8px"><div class="note">Puedes seleccionar hasta 6 fotografías. Se integrarán automáticamente al PDF, numeradas y manteniendo su proporción.</div></div>
 <div class="actions">
@@ -164,12 +165,34 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 </div>
 </section>
 
+<section id="view-flota" class="hidden">
+<div class="panel">
+<h2>Reparación / mantención Equipos Flota / Sondas</h2>
+<div class="date-box"><b>Fecha:</b> <span id="fFechaFmt"></span><div class="note">La fecha se completa automáticamente al momento de generar la solicitud.</div></div>
+<div class="grid">
+<label>N° interno / Equipo:</label><input id="fInterno" placeholder="Ej.: 1-161 / 944">
+<label>Tipo de equipo:</label><input id="fTipo" placeholder="Ej.: Sonda, camión aljibe, manipulador">
+<label>Kilometraje / Horómetro actual:</label><input id="fKmActual" type="number" min="0" step="1" placeholder="Obligatorio">
+<label>Kilometraje / Horómetro próxima mantención:</label><input id="fKmMantencion" type="number" min="0" step="1" placeholder="Opcional">
+<div id="fKmRestante" class="note" style="grid-column:1/-1"></div>
+<label>Detalles reparación / mantención:</label><textarea id="fDetalles" placeholder="Describa los trabajos, fallas o mantenciones requeridas"></textarea>
+</div>
+<div class="photo-box"><b>Registro fotográfico opcional (máximo 6):</b><input id="fFotos" type="file" accept="image/*" multiple style="display:block;margin-top:8px"><div class="note">Puedes seleccionar hasta 6 fotografías. Se integrarán automáticamente al PDF, numeradas y manteniendo su proporción.</div></div>
+<div class="actions">
+<button class="btn btn-light" onclick="pdfFlota()">Generar PDF</button>
+<button class="btn btn-blue" onclick="correoFlota()">Abrir correo para revisar</button>
+<button class="btn btn-white" onclick="limpiarFlota()">Limpiar</button>
+</div>
+<small class="warn">El navegador genera el PDF y prepara el correo. Por seguridad, debes adjuntar manualmente el PDF al borrador de correo.</small>
+</div>
+</section>
+
 <section id="view-historial" class="hidden">
 <div class="panel">
 <h2>Historial de operaciones</h2>
 <div class="toolbar">
 <button class="btn btn-light" onclick="cargarHistorial()">Actualizar historial</button>
-<select id="hTipo" onchange="renderHistorial()"><option value="">Todos los tipos</option><option>TRASLADO</option><option>SRM</option><option>DEVOLUCIÓN</option><option>MINUTA</option><option>REPARACIÓN CAMIONETA</option></select>
+<select id="hTipo" onchange="renderHistorial()"><option value="">Todos los tipos</option><option>TRASLADO</option><option>SRM</option><option>DEVOLUCIÓN</option><option>MINUTA</option><option>REPARACIÓN / MANTENCIÓN CAMIONETA</option><option>EQUIPOS FLOTA / SONDAS</option></select>
 <input id="hBuscar" placeholder="Buscar pozo, equipo, sector..." oninput="renderHistorial()" style="min-width:280px">
 </div>
 <div id="historialEstado" class="note"></div>
@@ -194,6 +217,11 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 <div class="grid">
 <label>Para reparación:</label><input id="cParaReparacion" placeholder="Destinatario de reparación">
 <label>CC reparación:</label><input id="cCCReparacion" placeholder="Opcional">
+</div>
+<h3 class="section-title">Equipos Flota / Sondas</h3>
+<div class="grid">
+<label>Para flota / sondas:</label><input id="cParaFlota" placeholder="Destinatario Equipos Flota / Sondas">
+<label>CC flota / sondas:</label><input id="cCCFlota" placeholder="Opcional">
 </div>
 <div class="actions"><button class="btn btn-blue" onclick="guardarConfig()">Guardar configuración</button></div>
 <div class="note">Las configuraciones quedan guardadas en este navegador.</div>
@@ -227,7 +255,7 @@ function hoyISO(){const d=new Date();return d.getFullYear()+"-"+String(d.getMont
 function fechaCorta(iso){if(!iso)return"";const p=iso.split("-");return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:iso}
 function fechaHoy(){return fechaCorta(hoyISO())}
 function showView(v){
-["traslado","srm","devolucion","minuta","reparacion","historial","config"].forEach(x=>{$("view-"+x).classList.toggle("hidden",x!==v);$("nav-"+x)?.classList.toggle("active",x===v)});
+["traslado","srm","devolucion","minuta","reparacion","flota","historial","config"].forEach(x=>{$("view-"+x).classList.toggle("hidden",x!==v);$("nav-"+x)?.classList.toggle("active",x===v)});
 if(v==="historial")cargarHistorial();
 }
 function init(){
@@ -235,19 +263,23 @@ $("tFecha").value=hoyISO();$("tFechaFmt").textContent=fechaCorta($("tFecha").val
 $("dFechaFmt").textContent=fechaHoy();
 actualizarFechaHoraMinuta();
 $("rFechaFmt").textContent=fechaHoy();
+$("fFechaFmt").textContent=fechaHoy();
 $("cPara").value=localStorage.getItem("ddh_para")||"GVERNAL@GEOTEC.CL";
 $("cCC").value=localStorage.getItem("ddh_cc")||"dmiranda@geotec.cl; CAEDO@GEOTEC.CL";
 $("cParaMinuta").value=localStorage.getItem("ddh_para_minuta")||"";
 $("cCCMinuta").value=localStorage.getItem("ddh_cc_minuta")||"";
 $("cParaReparacion").value=localStorage.getItem("ddh_para_reparacion")||"";
 $("cCCReparacion").value=localStorage.getItem("ddh_cc_reparacion")||"";
+$("cParaFlota").value=localStorage.getItem("ddh_para_flota")||"";
+$("cCCFlota").value=localStorage.getItem("ddh_cc_flota")||"";
 $("devRows").innerHTML=preguntas.map((q,i)=>`<tr><td class="n">${i+1}</td><td>${esc(q)}</td><td><select class="table-input" id="dCumple${i+1}"><option></option><option${i<5?" selected":""}>Sí</option><option>No</option><option${i===5?" selected":""}>N/A</option></select></td><td><input class="table-input" id="dObs${i+1}"></td></tr>`).join("");
 $("minutaRows").innerHTML=Array.from({length:20},(_,i)=>`<tr><td class="n">${i+1}</td><td><input class="table-input" id="mComp${i+1}" placeholder="Compromiso o acuerdo"></td><td><input class="table-input" id="mResp${i+1}" placeholder="Responsable"></td><td><input class="table-input" id="mFecha${i+1}" type="date"></td></tr>`).join("");
 $("dFoto").addEventListener("change",function(){if(this.files.length>3){alert("Puede seleccionar un máximo de 3 fotografías.");this.value="";}});
 $("rFotos").addEventListener("change",function(){if(this.files.length>6){alert("Puede seleccionar un máximo de 6 fotografías.");this.value="";}});
+$("fFotos").addEventListener("change",function(){if(this.files.length>6){alert("Puede seleccionar un máximo de 6 fotografías.");this.value="";}});
 if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
-function guardarConfig(){localStorage.setItem("ddh_para",val("cPara"));localStorage.setItem("ddh_cc",val("cCC"));localStorage.setItem("ddh_para_minuta",val("cParaMinuta"));localStorage.setItem("ddh_cc_minuta",val("cCCMinuta"));localStorage.setItem("ddh_para_reparacion",val("cParaReparacion"));localStorage.setItem("ddh_cc_reparacion",val("cCCReparacion"));setStatus("Configuración de correo guardada en este navegador.")}
+function guardarConfig(){localStorage.setItem("ddh_para",val("cPara"));localStorage.setItem("ddh_cc",val("cCC"));localStorage.setItem("ddh_para_minuta",val("cParaMinuta"));localStorage.setItem("ddh_cc_minuta",val("cCCMinuta"));localStorage.setItem("ddh_para_reparacion",val("cParaReparacion"));localStorage.setItem("ddh_cc_reparacion",val("cCCReparacion"));localStorage.setItem("ddh_para_flota",val("cParaFlota"));localStorage.setItem("ddh_cc_flota",val("cCCFlota"));setStatus("Configuración de correo guardada en este navegador.")}
 function mailto(subject,body){
 const para=val("cPara");const cc=val("cCC");
 const url=`mailto:${encodeURIComponent(para)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -358,35 +390,36 @@ function limpiarMinuta(){
 function mailtoReparacion(subject,body){
  const para=val("cParaReparacion")||localStorage.getItem("ddh_para_reparacion")||"";
  const cc=val("cCCReparacion")||localStorage.getItem("ddh_cc_reparacion")||"";
- if(!para){alert("Configure primero el destinatario de Reparación camioneta en “Configuración de correo”.");showView("config");$("cParaReparacion").focus();return false}
+ if(!para){alert("Configure primero el destinatario de Reparación / mantención camioneta en “Configuración de correo”.");showView("config");$("cParaReparacion").focus();return false}
  const url=`mailto:${encodeURIComponent(para)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
  window.location.href=url; return true;
 }
 function kmNumero(id){const raw=val(id).replace(/\./g,"").replace(/,/g,".");const n=Number(raw);return Number.isFinite(n)?n:null}
 function fmtKm(n){return new Intl.NumberFormat("es-CL",{maximumFractionDigits:0}).format(n)}
-function actualizarKmRestante(){const a=kmNumero("rKmActual"),m=val("rKmMantencion")?kmNumero("rKmMantencion"):null;let txt="";if(a!==null&&m!==null){const falta=m-a;txt=falta>=0?`Faltan ${fmtKm(falta)} km para la próxima mantención.`:`Mantención excedida en ${fmtKm(Math.abs(falta))} km.`}$("rKmRestante").textContent=txt}
+function actualizarKmRestante(){const a=kmNumero("rKmActual"),m=val("rKmMantencion")?kmNumero("rKmMantencion"):null;let txt="";if(a!==null&&m!==null){const falta=m-a;txt=falta>=0?`Faltan ${fmtKm(falta)} unidades para la próxima mantención.`:`Mantención excedida en ${fmtKm(Math.abs(falta))} unidades.`}$("rKmRestante").textContent=txt}
 function datosReparacionCamioneta(){const kmActual=kmNumero("rKmActual"),kmMantencion=val("rKmMantencion")?kmNumero("rKmMantencion"):null;return {fecha:fechaHoy(),interno:val("rInterno"),patente:val("rPatente"),kmActual,kmMantencion,kmRestante:kmActual!==null&&kmMantencion!==null?kmMantencion-kmActual:null,detalles:val("rDetalles")}}
 async function correoReparacionCamioneta(){
- if(!req([["rInterno","N° interno"],["rPatente","Patente"],["rKmActual","Km actual"],["rDetalles","Detalles por reparar"]]))return;
+ if(!req([["rInterno","N° interno"],["rPatente","Patente"],["rKmActual","Kilometraje / Horómetro actual"],["rDetalles","Detalles reparación / mantención"]]))return;
  const d=datosReparacionCamioneta();
- try{await guardarOnline({tipo:"REPARACIÓN CAMIONETA",fecha:d.fecha,equipo:d.interno,pozo:"",sector_origen:"",sector_destino:"",sector:d.patente,supervisor:"",jefe_faena:"",detalle:`Km actual: ${fmtKm(d.kmActual)}${d.kmMantencion!==null?` | Km próxima mantención: ${fmtKm(d.kmMantencion)} | ${d.kmRestante>=0?`Faltan ${fmtKm(d.kmRestante)} km para mantención`:`Mantención excedida en ${fmtKm(Math.abs(d.kmRestante))} km`}`:""} | Detalles por reparar: ${d.detalles}`,estado:"Correo abierto para revisión",identificador:identificador("REPARACIÓN CAMIONETA",d.fecha,d.interno,d.patente,d.detalles)});}catch(e){}
- const asunto=`SOLICITUD REPARACIÓN CAMIONETA - ${d.interno} - ${d.patente}`;
- const kmMail=`KM ACTUAL: ${fmtKm(d.kmActual)}${d.kmMantencion!==null?`\nKM PRÓXIMA MANTENCIÓN: ${fmtKm(d.kmMantencion)}\n${d.kmRestante>=0?`FALTAN ${fmtKm(d.kmRestante)} KM PARA LA MANTENCIÓN.`:`MANTENCIÓN EXCEDIDA EN ${fmtKm(Math.abs(d.kmRestante))} KM.`}`:""}`;
- const cuerpo=`Estimados:\n\nJunto con saludar, se solicita gestionar la reparación de la camioneta ${d.interno}, patente ${d.patente}, debido a los siguientes requerimientos:\n\n${kmMail}\n\nDETALLES POR REPARAR:\n${d.detalles}\n\nSe adjunta registro en PDF con el detalle de la solicitud y respaldo fotográfico correspondiente.\n\nQuedamos atentos a la coordinación y programación de los trabajos.\n\nSaludos,\nDEPARTAMENTO OPERACIONES DDH`;
- if(mailtoReparacion(asunto,cuerpo))setStatus("Solicitud de reparación guardada en historial online. Abriendo borrador de correo.");
+ try{await guardarOnline({tipo:"REPARACIÓN / MANTENCIÓN CAMIONETA",fecha:d.fecha,equipo:d.interno,pozo:"",sector_origen:"",sector_destino:"",sector:d.patente,supervisor:"",jefe_faena:"",detalle:`Kilometraje / Horómetro actual: ${fmtKm(d.kmActual)}${d.kmMantencion!==null?` | Kilometraje / Horómetro próxima mantención: ${fmtKm(d.kmMantencion)} | ${d.kmRestante>=0?`Faltan ${fmtKm(d.kmRestante)} unidades para mantención`:`Mantención excedida en ${fmtKm(Math.abs(d.kmRestante))} unidades`}`:""} | Detalles por reparar: ${d.detalles}`,estado:"Correo abierto para revisión",identificador:identificador("REPARACIÓN / MANTENCIÓN CAMIONETA",d.fecha,d.interno,d.patente,d.detalles)});}catch(e){}
+ const asunto=`REPARACIÓN / MANTENCIÓN CAMIONETA - ${d.interno} - ${d.patente}`;
+ const kmMail=`KILOMETRAJE / HORÓMETRO ACTUAL: ${fmtKm(d.kmActual)}${d.kmMantencion!==null?`\nKILOMETRAJE / HORÓMETRO PRÓXIMA MANTENCIÓN: ${fmtKm(d.kmMantencion)}\n${d.kmRestante>=0?`FALTAN ${fmtKm(d.kmRestante)} UNIDADES PARA LA MANTENCIÓN.`:`MANTENCIÓN EXCEDIDA EN ${fmtKm(Math.abs(d.kmRestante))} UNIDADES.`}`:""}`;
+ const cuerpo=`Estimados:\n\nJunto con saludar, se solicita gestionar la reparación / mantención de la camioneta ${d.interno}, patente ${d.patente}, debido a los siguientes requerimientos:\n\n${kmMail}\n\nDETALLES REPARACIÓN / MANTENCIÓN:\n${d.detalles}\n\nSe adjunta registro en PDF con el detalle de la solicitud y respaldo fotográfico correspondiente.\n\nQuedamos atentos a la coordinación y programación de los trabajos.\n\nSaludos,\nDEPARTAMENTO OPERACIONES DDH`;
+ if(mailtoReparacion(asunto,cuerpo))setStatus("Solicitud de reparación / mantención guardada en historial online. Abriendo borrador de correo.");
 }
-function limpiarReparacionCamioneta(){["rInterno","rPatente","rKmActual","rKmMantencion","rDetalles"].forEach(x=>$(x).value="");$("rKmRestante").textContent="";$("rFotos").value="";$("rFechaFmt").textContent=fechaHoy();setStatus("Formulario de reparación de camioneta limpio.")}
+function limpiarReparacionCamioneta(){["rInterno","rPatente","rKmActual","rKmMantencion","rDetalles"].forEach(x=>$(x).value="");$("rKmRestante").textContent="";$("rFotos").value="";$("rFechaFmt").textContent=fechaHoy();
+$("fFechaFmt").textContent=fechaHoy();setStatus("Formulario de reparación / mantención de camioneta limpio.")}
 
 async function pdfReparacionCamioneta(){
- if(!req([["rInterno","N° interno"],["rPatente","Patente"],["rKmActual","Km actual"],["rDetalles","Detalles por reparar"]]))return;
+ if(!req([["rInterno","N° interno"],["rPatente","Patente"],["rKmActual","Kilometraje / Horómetro actual"],["rDetalles","Detalles reparación / mantención"]]))return;
  const fotos=Array.from(($('rFotos').files||[]));
  if(fotos.length>6){alert("Puede adjuntar un máximo de 6 fotografías.");return}
  if(!pdfReady())return fallbackPrint();
  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"}),d=datosReparacionCamioneta();
- pdfHeader(doc,"SOLICITUD DE REPARACIÓN DE CAMIONETA");
- doc.autoTable({startY:40,theme:"grid",styles:{fontSize:9,cellPadding:3},body:[["Fecha",d.fecha],["N° interno",d.interno],["Patente",d.patente],["Km actual",fmtKm(d.kmActual)],...(d.kmMantencion!==null?[["Km próxima mantención",fmtKm(d.kmMantencion)],["Estado mantención",d.kmRestante>=0?`Faltan ${fmtKm(d.kmRestante)} km para la mantención`:`Mantención excedida en ${fmtKm(Math.abs(d.kmRestante))} km`]]:[])],columnStyles:{0:{fontStyle:"bold",fillColor:[248,250,252],cellWidth:45}}});
+ pdfHeader(doc,"REPARACIÓN / MANTENCIÓN CAMIONETA");
+ doc.autoTable({startY:40,theme:"grid",styles:{fontSize:9,cellPadding:3},body:[["Fecha",d.fecha],["N° interno",d.interno],["Patente",d.patente],["Kilometraje / Horómetro actual",fmtKm(d.kmActual)],...(d.kmMantencion!==null?[["Kilometraje / Horómetro próxima mantención",fmtKm(d.kmMantencion)],["Estado mantención",d.kmRestante>=0?`Faltan ${fmtKm(d.kmRestante)} unidades para la mantención`:`Mantención excedida en ${fmtKm(Math.abs(d.kmRestante))} unidades`]]:[])],columnStyles:{0:{fontStyle:"bold",fillColor:[248,250,252],cellWidth:45}}});
  let y=doc.lastAutoTable.finalY+8;
- doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(10);doc.text("DETALLES POR REPARAR",14,y);
+ doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(10);doc.text("DETALLES REPARACIÓN / MANTENCIÓN",14,y);
  const lineas=doc.splitTextToSize(d.detalles,176); const boxH=Math.max(28,lineas.length*5+10);
  doc.setDrawColor(200,212,223);doc.setFillColor(250,252,254);doc.roundedRect(14,y+4,182,boxH,1,1,"FD");doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(lineas,18,y+11);
  let nextY=y+boxH+12;
@@ -400,11 +433,43 @@ async function pdfReparacionCamioneta(){
     const fmt=(fotos[i].type||"").toLowerCase().includes("png")?"PNG":"JPEG";doc.addImage(data,fmt,fx,nextY,fw,fh);nextY+=fh+10;
    }catch(e){console.error(e);alert(`No fue posible integrar la fotografía ${i+1}. El PDF continuará con las demás.`)}
  }
- doc.save(`SOLICITUD_REPARACION_CAMIONETA_${d.interno.replace(/[\\/:*?"<>|]/g,"_")}_${d.patente.replace(/[\\/:*?"<>|]/g,"_")}.pdf`);
+ doc.save(`REPARACION_MANTENCION_CAMIONETA_${d.interno.replace(/[\\/:*?"<>|]/g,"_")}_${d.patente.replace(/[\\/:*?"<>|]/g,"_")}.pdf`);
  setStatus(fotos.length?`PDF de reparación generado con ${fotos.length} fotografía(s) integrada(s).`:"PDF de reparación generado.");
 }
 
 $("rKmActual").addEventListener("input",actualizarKmRestante);$("rKmMantencion").addEventListener("input",actualizarKmRestante);
+
+function mailtoFlota(subject,body){
+ const para=val("cParaFlota")||localStorage.getItem("ddh_para_flota")||"";
+ const cc=val("cCCFlota")||localStorage.getItem("ddh_cc_flota")||"";
+ if(!para){alert("Configure primero el destinatario de Equipos Flota / Sondas en Configuración de correo.");showView("config");$("cParaFlota").focus();return false}
+ window.location.href=`mailto:${encodeURIComponent(para)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;return true;
+}
+function actualizarFlotaRestante(){const a=kmNumero("fKmActual"),m=val("fKmMantencion")?kmNumero("fKmMantencion"):null;let txt="";if(a!==null&&m!==null){const falta=m-a;txt=falta>=0?`Faltan ${fmtKm(falta)} unidades para la próxima mantención.`:`Mantención excedida en ${fmtKm(Math.abs(falta))} unidades.`}$("fKmRestante").textContent=txt}
+function datosFlota(){const actual=kmNumero("fKmActual"),prox=val("fKmMantencion")?kmNumero("fKmMantencion"):null;return {fecha:fechaHoy(),interno:val("fInterno"),tipo:val("fTipo"),actual,prox,restante:actual!==null&&prox!==null?prox-actual:null,detalles:val("fDetalles")}}
+async function correoFlota(){
+ if(!req([["fInterno","N° interno / Equipo"],["fKmActual","Kilometraje / Horómetro actual"],["fDetalles","Detalles reparación / mantención"]]))return;
+ const d=datosFlota();
+ const estado=d.prox!==null?(d.restante>=0?`Faltan ${fmtKm(d.restante)} unidades para mantención`:`Mantención excedida en ${fmtKm(Math.abs(d.restante))} unidades`):"";
+ try{await guardarOnline({tipo:"EQUIPOS FLOTA / SONDAS",fecha:d.fecha,equipo:d.interno,pozo:"",sector_origen:"",sector_destino:"",sector:d.tipo,supervisor:"",jefe_faena:"",detalle:`Kilometraje / Horómetro actual: ${fmtKm(d.actual)}${d.prox!==null?` | Kilometraje / Horómetro próxima mantención: ${fmtKm(d.prox)} | ${estado}`:""} | Detalles reparación / mantención: ${d.detalles}`,estado:"Correo abierto para revisión",identificador:identificador("EQUIPOS FLOTA / SONDAS",d.fecha,d.interno,d.detalles)});}catch(e){}
+ const medicion=`KILOMETRAJE / HORÓMETRO ACTUAL: ${fmtKm(d.actual)}${d.prox!==null?`\nKILOMETRAJE / HORÓMETRO PRÓXIMA MANTENCIÓN: ${fmtKm(d.prox)}\n${estado.toUpperCase()}.`:""}`;
+ const asunto=`REPARACIÓN / MANTENCIÓN EQUIPOS FLOTA / SONDAS - ${d.interno}`;
+ const cuerpo=`Estimados:\n\nJunto con saludar, se solicita gestionar la reparación / mantención del equipo ${d.interno}${d.tipo?`, tipo ${d.tipo}`:""}.\n\n${medicion}\n\nDETALLES REPARACIÓN / MANTENCIÓN:\n${d.detalles}\n\nSe adjunta registro en PDF con el detalle de la solicitud y respaldo fotográfico correspondiente.\n\nQuedamos atentos a la coordinación y programación de los trabajos.\n\nSaludos,\nDEPARTAMENTO OPERACIONES DDH`;
+ if(mailtoFlota(asunto,cuerpo))setStatus("Solicitud Equipos Flota / Sondas guardada en historial online. Abriendo borrador de correo.");
+}
+function limpiarFlota(){["fInterno","fTipo","fKmActual","fKmMantencion","fDetalles"].forEach(x=>$(x).value="");$("fKmRestante").textContent="";$("fFotos").value="";$("fFechaFmt").textContent=fechaHoy();setStatus("Formulario Equipos Flota / Sondas limpio.")}
+async function pdfFlota(){
+ if(!req([["fInterno","N° interno / Equipo"],["fKmActual","Kilometraje / Horómetro actual"],["fDetalles","Detalles reparación / mantención"]]))return;
+ const fotos=Array.from(($('fFotos').files||[]));if(fotos.length>6){alert("Puede adjuntar un máximo de 6 fotografías.");return}if(!pdfReady())return fallbackPrint();
+ const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"}),d=datosFlota();pdfHeader(doc,"REPARACIÓN / MANTENCIÓN EQUIPOS FLOTA / SONDAS");
+ const body=[["Fecha",d.fecha],["N° interno / Equipo",d.interno],["Tipo de equipo",d.tipo||"-"],["Kilometraje / Horómetro actual",fmtKm(d.actual)]];
+ if(d.prox!==null){body.push(["Kilometraje / Horómetro próxima mantención",fmtKm(d.prox)]);body.push(["Estado mantención",d.restante>=0?`Faltan ${fmtKm(d.restante)} unidades para la mantención`:`Mantención excedida en ${fmtKm(Math.abs(d.restante))} unidades`])}
+ doc.autoTable({startY:40,theme:"grid",styles:{fontSize:9,cellPadding:3},body,columnStyles:{0:{fontStyle:"bold",fillColor:[248,250,252],cellWidth:58}}});
+ let y=doc.lastAutoTable.finalY+8;doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(10);doc.text("DETALLES REPARACIÓN / MANTENCIÓN",14,y);const lineas=doc.splitTextToSize(d.detalles,176),boxH=Math.max(28,lineas.length*5+10);doc.setDrawColor(200,212,223);doc.setFillColor(250,252,254);doc.roundedRect(14,y+4,182,boxH,1,1,"FD");doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(lineas,18,y+11);let nextY=y+boxH+12;
+ for(let i=0;i<fotos.length;i++){try{const data=await leerImagenArchivo(fotos[i]),dim=await dimensionesImagen(data);const maxW=170,maxH=210;let fw=maxW,fh=fw*(dim.h/dim.w);if(fh>maxH){fh=maxH;fw=fh*(dim.w/dim.h)}if(i>0||nextY+fh+15>285){doc.addPage();nextY=18}doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(10);doc.text(`REGISTRO FOTOGRÁFICO ${i+1} DE ${fotos.length}`,105,nextY,{align:"center"});nextY+=6;const fx=(210-fw)/2;doc.setDrawColor(180,190,200);doc.rect(fx-1,nextY-1,fw+2,fh+2);const fmt=(fotos[i].type||"").toLowerCase().includes("png")?"PNG":"JPEG";doc.addImage(data,fmt,fx,nextY,fw,fh);nextY+=fh+10}catch(e){console.error(e);alert(`No fue posible integrar la fotografía ${i+1}. El PDF continuará con las demás.`)}}
+ doc.save(`REPARACION_MANTENCION_EQUIPOS_FLOTA_SONDAS_${d.interno.replace(/[\/:*?"<>|]/g,"_")}.pdf`);setStatus(fotos.length?`PDF Equipos Flota / Sondas generado con ${fotos.length} fotografía(s).`:"PDF Equipos Flota / Sondas generado.");
+}
+$("fKmActual").addEventListener("input",actualizarFlotaRestante);$("fKmMantencion").addEventListener("input",actualizarFlotaRestante);
 
 async function cargarHistorial(){
 $("historialEstado").textContent="Cargando historial online...";
