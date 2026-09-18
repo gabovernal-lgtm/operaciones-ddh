@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#153f6d">
 <title>Operaciones DDH</title>
-<!-- v1.13 LIMPIA: PDF Proyección equipos formato corporativo limpio con fecha automática -->
+<!-- v1.13 LIMPIA FIX: PDF Proyección equipos formato corporativo limpio con fecha automática -->
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--blue:#153f6d;--blue2:#0e3158;--soft:#eef3f8;--line:#d6e0e9;--ink:#172033;--muted:#657483;--panel:#fff;--yellow:#f2b544}
@@ -559,9 +559,7 @@ async function pdfProyeccion(){
  const body=filas.length?filas.map((f,i)=>[String(i+1),f.equipo,f.pozo,`${fmtMetros(f.metros)} m`,f.fecha,f.obs||""]):[["","-","-","-","-","Sin equipos ingresados"]];
  function heatColor(v){const t=Math.max(0,Math.min(1,Number(v)/70)); if(t<=.5){const q=t/.5;return [239,Math.round(173+(220-173)*q),Math.round(178+(142-178)*q)]} const q=(t-.5)/.5;return [Math.round(239+(196-239)*q),Math.round(220+(231-220)*q),Math.round(142+(192-142)*q)]}
  doc.autoTable({startY:49,margin:{left:14,right:14},theme:"grid",
-   head:[["N°","EQUIPO","POZO","METROS POR
-PERFORAR","FECHA ESTIMADA
-DE TÉRMINO","OBSERVACIONES"]],body,
+   head:[["N°","EQUIPO","POZO","METROS POR\nPERFORAR","FECHA ESTIMADA\nDE TÉRMINO","OBSERVACIONES"]],body,
    styles:{fontSize:7.2,cellPadding:2.6,lineColor:line,lineWidth:.12,valign:"middle",textColor:text},
    headStyles:{fillColor:navy,textColor:[255,255,255],fontStyle:"bold",halign:"center",valign:"middle",minCellHeight:12},
    columnStyles:{0:{cellWidth:10,halign:"center"},1:{cellWidth:20,fontStyle:"bold",halign:"center"},2:{cellWidth:24,halign:"center"},3:{cellWidth:26,halign:"center",fontStyle:"bold"},4:{cellWidth:32,halign:"center"},5:{cellWidth:70}},
