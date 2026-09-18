@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#153f6d">
 <title>Operaciones DDH</title>
-<!-- v1.11: portada de módulos + Proyección equipos -->
+<!-- v1.12: PDF Proyección equipos + correo adjunto + iconos de menú mejorados -->
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--blue:#153f6d;--blue2:#0e3158;--soft:#eef3f8;--line:#d6e0e9;--ink:#172033;--muted:#657483;--panel:#fff;--yellow:#f2b544}
@@ -24,8 +24,8 @@
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar input,.toolbar select{border:1px solid #b8c5d1;border-radius:5px;padding:8px 10px}
 .photo-box{margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #d8e2ea;border-radius:6px}
 small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:1px solid #eed78d;padding:9px;border-radius:5px}
-.home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:8px}.home-card{min-height:150px;border:1px solid #cbd8e4;border-radius:14px;background:#fff;padding:20px;cursor:pointer;text-align:left;box-shadow:0 3px 12px rgba(0,0,0,.06);transition:.15s;font-family:"Segoe UI",Arial}.home-card:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(0,0,0,.10);border-color:#9db6cf}.home-card .ico{display:block;font-size:28px;margin-bottom:14px}.home-card strong{display:block;color:var(--blue);font-size:17px;line-height:1.2;margin-bottom:7px}.home-card span{display:block;color:var(--muted);font-size:12px;line-height:1.35}.module-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.module-head h2{margin:0!important;border:0!important;padding:0!important}.projection-wrap{overflow:auto}.projection-table{width:100%;border-collapse:collapse;min-width:900px}.projection-table th{background:#eef4fa;color:var(--blue);border:1px solid #c8d4df;padding:9px;font-size:12px}.projection-table td{border:1px solid #d7e0e8;padding:6px}.projection-table .num{width:42px;text-align:center}.projection-table input{width:100%;border:1px solid #b8c5d1;border-radius:5px;padding:8px;font:13px "Segoe UI",Arial}.projection-table .metros{width:145px}.projection-table .fecha{width:165px}.projection-table .obs{width:240px}
-@media(max-width:760px){.home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.home-card{min-height:125px;padding:14px}.grid{grid-template-columns:1fr}.grid label{margin-top:4px}.container{padding:0 10px}.panel{padding:15px}.nav{position:static}.dev-table{min-width:800px}.dev-scroll{overflow:auto}}
+.home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:8px}.home-card{min-height:150px;border:1px solid #cbd8e4;border-radius:14px;background:#fff;padding:20px;cursor:pointer;text-align:left;box-shadow:0 3px 12px rgba(0,0,0,.06);transition:.15s;font-family:"Segoe UI",Arial}.home-card:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(0,0,0,.10);border-color:#9db6cf}.home-card .ico{display:flex;width:58px;height:58px;align-items:center;justify-content:center;font-size:34px;line-height:1;margin-bottom:14px;border-radius:16px;background:#eaf2fb;color:#153f6d;box-shadow:inset 0 0 0 1px rgba(21,63,109,.08)}.home-card:nth-child(2) .ico{background:#fff1d6;color:#a96000}.home-card:nth-child(3) .ico{background:#e6f6ed;color:#167246}.home-card:nth-child(4) .ico{background:#f0eaff;color:#6445a8}.home-card:nth-child(5) .ico{background:#fff0ea;color:#b44c27}.home-card:nth-child(6) .ico{background:#e8f4f8;color:#176c83}.home-card:nth-child(7) .ico{background:#e9efff;color:#2859b8}.home-card:nth-child(8) .ico{background:#f2f3f5;color:#4e5968}.home-card:nth-child(9) .ico{background:#fff4d9;color:#8b6700}.home-card strong{display:block;color:var(--blue);font-size:17px;line-height:1.2;margin-bottom:7px}.home-card span{display:block;color:var(--muted);font-size:12px;line-height:1.35}.module-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.module-head h2{margin:0!important;border:0!important;padding:0!important}.projection-wrap{overflow:auto}.projection-table{width:100%;border-collapse:collapse;min-width:900px}.projection-table th{background:#eef4fa;color:var(--blue);border:1px solid #c8d4df;padding:9px;font-size:12px}.projection-table td{border:1px solid #d7e0e8;padding:6px}.projection-table .num{width:42px;text-align:center}.projection-table input{width:100%;border:1px solid #b8c5d1;border-radius:5px;padding:8px;font:13px "Segoe UI",Arial}.projection-table .metros{width:145px}.projection-table .fecha{width:165px}.projection-table .obs{width:240px}
+@media(max-width:760px){.home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.home-card{min-height:140px;padding:14px}.home-card .ico{width:52px;height:52px;font-size:31px}.grid{grid-template-columns:1fr}.grid label{margin-top:4px}.container{padding:0 10px}.panel{padding:15px}.nav{position:static}.dev-table{min-width:800px}.dev-scroll{overflow:auto}}
 @media print{.nav,.actions,.note,.status,.toolbar,.header{display:none!important}.container{max-width:none;margin:0;padding:0}.panel{box-shadow:none;border:0;padding:0}.hidden{display:none!important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
@@ -210,11 +210,11 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 <section id="view-proyeccion" class="hidden">
 <div class="panel">
 <div class="module-head"><h2>Proyección equipos</h2><button class="btn btn-white" onclick="showView('home')">← Volver al menú</button></div>
-<div class="note" style="margin-bottom:12px">Complete solo las filas necesarias. Al generar el correo, los equipos se ordenarán automáticamente de menor a mayor por <b>Metros por perforar</b>.</div>
+<div class="note" style="margin-bottom:12px">Complete solo las filas necesarias. Al generar el PDF, los equipos se ordenarán automáticamente de menor a mayor por <b>Metros por perforar</b>.</div>
 <div class="projection-wrap"><table class="projection-table"><thead><tr><th class="num">N°</th><th>Equipo</th><th>Pozo</th><th class="metros">Metros por perforar</th><th class="fecha">Fecha estimada de término</th><th class="obs">Observaciones</th></tr></thead><tbody id="proyeccionRows"></tbody></table></div>
 <h3 class="section-title">Equipos para coordinación</h3><textarea id="pCoordinacion" class="table-input" style="min-height:95px" placeholder="Ingrese equipos y detalle para coordinación"></textarea>
 <h3 class="section-title">Equipos que necesitan actualización en Cronos</h3><textarea id="pCronos" class="table-input" style="min-height:95px" placeholder="Ingrese equipos y detalle de actualización en Cronos"></textarea>
-<div class="actions"><button class="btn btn-blue" onclick="correoProyeccion()">Generar correo</button><button class="btn btn-white" onclick="limpiarProyeccion()">Limpiar</button></div>
+<div class="actions"><button class="btn btn-light" onclick="pdfProyeccion()">Generar PDF</button><button class="btn btn-blue" onclick="correoProyeccion()">Abrir correo para revisar</button><button class="btn btn-white" onclick="limpiarProyeccion()">Limpiar</button></div><small class="warn">Genera primero el PDF y luego adjúntalo manualmente al correo preparado por la aplicación.</small>
 </div>
 </section>
 
@@ -223,7 +223,7 @@ small.warn{display:block;margin-top:8px;color:#7b5a00;background:#fff8dd;border:
 <div class="module-head"><h2>Historial de operaciones</h2><button class="btn btn-white" onclick="showView('home')">← Volver al menú</button></div>
 <div class="toolbar">
 <button class="btn btn-light" onclick="cargarHistorial()">Actualizar historial</button>
-<select id="hTipo" onchange="renderHistorial()"><option value="">Todos los tipos</option><option>TRASLADO</option><option>SRM</option><option>DEVOLUCIÓN</option><option>MINUTA</option><option>REPARACIÓN / MANTENCIÓN CAMIONETA</option><option>EQUIPOS FLOTA / SONDAS</option></select>
+<select id="hTipo" onchange="renderHistorial()"><option value="">Todos los tipos</option><option>TRASLADO</option><option>SRM</option><option>DEVOLUCIÓN</option><option>MINUTA</option><option>REPARACIÓN / MANTENCIÓN CAMIONETA</option><option>EQUIPOS FLOTA / SONDAS</option><option>PROYECCIÓN EQUIPOS</option></select>
 <input id="hBuscar" placeholder="Buscar pozo, equipo, sector..." oninput="renderHistorial()" style="min-width:280px">
 </div>
 <div id="historialEstado" class="note"></div>
@@ -533,42 +533,50 @@ function filasProyeccion(){
  return filas.sort((a,b)=>a.metros-b.metros);
 }
 function fmtMetros(n){return new Intl.NumberFormat("es-CL",{maximumFractionDigits:1}).format(n)}
+async function pdfProyeccion(){
+ const filas=filasProyeccion(); if(filas===null)return;
+ const coordinacion=val("pCoordinacion"),cronos=val("pCronos");
+ if(!filas.length&&!coordinacion&&!cronos){alert("Ingrese al menos un equipo o información de coordinación / Cronos.");return}
+ if(!pdfReady())return fallbackPrint();
+ const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"}),fecha=fechaHoy();
+ // Encabezado corporativo
+ doc.setFillColor(21,63,109);doc.rect(0,0,210,34,"F");
+ try{doc.addImage(LOGO_GEOTEC,"PNG",14,7,34,17)}catch(e){}
+ try{doc.addImage(LOGO_COLLAHUASI,"PNG",164,7,32,16)}catch(e){}
+ doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text("REPORTE DIARIO DE AVANCE EQUIPOS DDH + RC",105,16,{align:"center",maxWidth:105});
+ doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`Fecha: ${fecha}`,105,25,{align:"center"});
+ doc.setFillColor(242,181,68);doc.rect(0,34,210,2.2,"F");
+ let y=43;
+ doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text("PROYECCIÓN DE EQUIPOS",14,y);
+ y+=4;
+ const body=filas.length?filas.map(f=>[f.equipo,f.pozo,`${fmtMetros(f.metros)} m`,f.fecha,f.obs||"-"]):[["-","-","-","-","Sin equipos ingresados"]];
+ doc.autoTable({startY:y,margin:{left:14,right:14},theme:"grid",head:[["EQUIPO","POZO","METROS POR PERFORAR","FECHA ESTIMADA DE TÉRMINO","OBSERVACIONES"]],body,styles:{fontSize:8,cellPadding:2.5,lineColor:[202,214,226],lineWidth:.15,valign:"middle"},headStyles:{fillColor:[21,63,109],textColor:[255,255,255],fontStyle:"bold",halign:"center"},columnStyles:{0:{cellWidth:25,fontStyle:"bold"},1:{cellWidth:28},2:{cellWidth:35,halign:"center"},3:{cellWidth:38,halign:"center"},4:{cellWidth:56}},alternateRowStyles:{fillColor:[244,248,252]}});
+ y=doc.lastAutoTable.finalY+9;
+ function bloque(titulo,texto,accent){
+   const lines=doc.splitTextToSize(texto||"Sin información.",174),h=Math.max(20,lines.length*4.6+13);
+   if(y+h>282){doc.addPage();y=18}
+   doc.setFillColor(245,248,252);doc.setDrawColor(202,214,226);doc.roundedRect(14,y,182,h,2,2,"FD");
+   doc.setFillColor(...accent);doc.rect(14,y,3.5,h,"F");
+   doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.text(titulo,21,y+7);
+   doc.setTextColor(35,43,55);doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text(lines,21,y+13);
+   y+=h+7;
+ }
+ bloque("EQUIPOS PARA COORDINACIÓN",coordinacion,[242,181,68]);
+ bloque("EQUIPOS QUE NECESITAN ACTUALIZACIÓN EN CRONOS",cronos,[21,63,109]);
+ const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setDrawColor(215,224,233);doc.line(14,289,196,289);doc.setTextColor(100,115,130);doc.setFontSize(7.5);doc.text("DEPARTAMENTO OPERACIONES DDH",14,294);doc.text(`Página ${i} de ${pages}`,196,294,{align:"right"})}
+ doc.save(`REPORTE_DIARIO_AVANCE_EQUIPOS_DDH_RC_${fecha}.pdf`);
+ setStatus("PDF de Proyección equipos generado y ordenado de menor a mayor por metros por perforar.");
+}
 async function correoProyeccion(){
  const filas=filasProyeccion(); if(filas===null)return;
  const coordinacion=val("pCoordinacion"),cronos=val("pCronos");
  if(!filas.length&&!coordinacion&&!cronos){alert("Ingrese al menos un equipo o información de coordinación / Cronos.");return}
  const fecha=fechaHoy();
- let body=`Estimados:
-
-Junto con saludar, se informa la proyección de equipos al ${fecha}.
-
-PROYECCIÓN EQUIPOS
-────────────────────────────────────────
-`;
- if(filas.length){filas.forEach((f,i)=>{body+=`${i+1}. EQUIPO: ${f.equipo}
-POZO: ${f.pozo}
-METROS POR PERFORAR: ${fmtMetros(f.metros)} m
-FECHA ESTIMADA DE TÉRMINO: ${f.fecha}
-OBSERVACIONES: ${f.obs||"-"}
-────────────────────────────────────────
-`;});}
- else body+=`Sin equipos ingresados.
-────────────────────────────────────────
-`;
- body+=`
-EQUIPOS PARA COORDINACIÓN
-────────────────────────────────────────
-${coordinacion||"Sin información."}
-
-EQUIPOS QUE NECESITAN ACTUALIZACIÓN EN CRONOS
-────────────────────────────────────────
-${cronos||"Sin información."}
-
-Saludos,
-DEPARTAMENTO OPERACIONES DDH`;
+ const asunto=`Reporte diario de avance equipos DDH + RC (${fecha})`;
+ const body=`Estimados:\n\nJunto con saludar, adjunto encontrarán el reporte diario de avance y proyección de pozos DDH + RC.\n\nEl documento adjunto incluye la proyección de término de los equipos, equipos para coordinación y equipos que necesitan actualización en Cronos.\n\nAtentamente,\nDEPARTAMENTO OPERACIONES DDH`;
  try{await guardarOnline({tipo:"PROYECCIÓN EQUIPOS",fecha,equipo:filas.map(f=>f.equipo).join(", "),pozo:filas.map(f=>f.pozo).join(", "),sector_origen:"",sector_destino:"",sector:"",supervisor:"",jefe_faena:"",detalle:`${filas.length} equipo(s) | Coordinación: ${coordinacion||"-"} | Cronos: ${cronos||"-"}`,estado:"Correo abierto para revisión",identificador:identificador("PROYECCIÓN EQUIPOS",fecha,...filas.map(f=>`${f.equipo}-${f.pozo}-${f.metros}`))});}catch(e){}
- mailto(`PROYECCIÓN EQUIPOS - ${fecha}`,body);
- setStatus("Correo de Proyección equipos preparado y ordenado de menor a mayor por metros por perforar.");
+ mailto(asunto,body);
+ setStatus("Correo preparado. Recuerda adjuntar el PDF generado antes de enviarlo.");
 }
 function limpiarProyeccion(){for(let i=1;i<=10;i++){["pEquipo","pPozo","pMetros","pFecha","pObs"].forEach(p=>$(p+i).value="")}$("pCoordinacion").value="";$("pCronos").value="";setStatus("Proyección equipos limpiada.")}
 
