@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#153f6d">
 <title>Operaciones DDH</title>
-<!-- v1.12: PDF Proyección equipos + correo adjunto + iconos de menú mejorados -->
+<!-- v1.13: PDF Proyección equipos corporativo + escala metros rojo a verde -->
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--blue:#153f6d;--blue2:#0e3158;--soft:#eef3f8;--line:#d6e0e9;--ink:#172033;--muted:#657483;--panel:#fff;--yellow:#f2b544}
@@ -539,33 +539,49 @@ async function pdfProyeccion(){
  if(!filas.length&&!coordinacion&&!cronos){alert("Ingrese al menos un equipo o información de coordinación / Cronos.");return}
  if(!pdfReady())return fallbackPrint();
  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"}),fecha=fechaHoy();
- // Encabezado corporativo
- doc.setFillColor(21,63,109);doc.rect(0,0,210,34,"F");
- try{doc.addImage(LOGO_GEOTEC,"PNG",14,7,34,17)}catch(e){}
- try{doc.addImage(LOGO_COLLAHUASI,"PNG",164,7,32,16)}catch(e){}
- doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text("REPORTE DIARIO DE AVANCE EQUIPOS DDH + RC",105,16,{align:"center",maxWidth:105});
- doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`Fecha: ${fecha}`,105,25,{align:"center"});
- doc.setFillColor(242,181,68);doc.rect(0,34,210,2.2,"F");
- let y=43;
- doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text("PROYECCIÓN DE EQUIPOS",14,y);
- y+=4;
+ // Encabezado sobrio: logos originales sobre fondo blanco.
+ try{doc.addImage(LOGO_GEOTEC,"PNG",14,9,38,19)}catch(e){}
+ try{doc.addImage(LOGO_COLLAHUASI,"PNG",155,9,41,19)}catch(e){}
+ doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.text("OPERACIONES DDH",105,13,{align:"center"});
+ doc.setDrawColor(21,63,109);doc.setLineWidth(.45);doc.line(65,18,145,18);
+ doc.setFontSize(15);doc.text("REPORTE DIARIO DE AVANCE EQUIPOS DDH + RC",105,36,{align:"center"});
+ doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(93,112,132);doc.text("PROYECCIÓN DE POZOS",14,43);
+ doc.setFillColor(241,246,251);doc.setDrawColor(205,218,230);doc.roundedRect(155,34,41,12,2,2,"FD");
+ doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(7);doc.text("FECHA",160,39);
+ doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text(fecha,160,43.5);
+ doc.setDrawColor(21,63,109);doc.setLineWidth(.25);doc.line(14,48,196,48);
+ let y=53;
  const body=filas.length?filas.map(f=>[f.equipo,f.pozo,`${fmtMetros(f.metros)} m`,f.fecha,f.obs||"-"]):[["-","-","-","-","Sin equipos ingresados"]];
- doc.autoTable({startY:y,margin:{left:14,right:14},theme:"grid",head:[["EQUIPO","POZO","METROS POR PERFORAR","FECHA ESTIMADA DE TÉRMINO","OBSERVACIONES"]],body,styles:{fontSize:8,cellPadding:2.5,lineColor:[202,214,226],lineWidth:.15,valign:"middle"},headStyles:{fillColor:[21,63,109],textColor:[255,255,255],fontStyle:"bold",halign:"center"},columnStyles:{0:{cellWidth:25,fontStyle:"bold"},1:{cellWidth:28},2:{cellWidth:35,halign:"center"},3:{cellWidth:38,halign:"center"},4:{cellWidth:56}},alternateRowStyles:{fillColor:[244,248,252]}});
- y=doc.lastAutoTable.finalY+9;
- function bloque(titulo,texto,accent){
-   const lines=doc.splitTextToSize(texto||"Sin información.",174),h=Math.max(20,lines.length*4.6+13);
-   if(y+h>282){doc.addPage();y=18}
-   doc.setFillColor(245,248,252);doc.setDrawColor(202,214,226);doc.roundedRect(14,y,182,h,2,2,"FD");
-   doc.setFillColor(...accent);doc.rect(14,y,3.5,h,"F");
-   doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.text(titulo,21,y+7);
-   doc.setTextColor(35,43,55);doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text(lines,21,y+13);
-   y+=h+7;
+ const metros=filas.map(f=>f.metros),minM=metros.length?Math.min(...metros):0,maxM=metros.length?Math.max(...metros):0;
+ function heatColor(v){
+   if(maxM<=minM)return [255,238,176];
+   const t=(v-minM)/(maxM-minM);
+   if(t<=.5){const q=t/.5;return [Math.round(247+(255-247)*q),Math.round(181+(235-181)*q),Math.round(190+(150-190)*q)];}
+   const q=(t-.5)/.5;return [Math.round(255+(190-255)*q),Math.round(235+(226-235)*q),Math.round(150+(178-150)*q)];
  }
- bloque("EQUIPOS PARA COORDINACIÓN",coordinacion,[242,181,68]);
- bloque("EQUIPOS QUE NECESITAN ACTUALIZACIÓN EN CRONOS",cronos,[21,63,109]);
- const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setDrawColor(215,224,233);doc.line(14,289,196,289);doc.setTextColor(100,115,130);doc.setFontSize(7.5);doc.text("DEPARTAMENTO OPERACIONES DDH",14,294);doc.text(`Página ${i} de ${pages}`,196,294,{align:"right"})}
+ doc.autoTable({startY:y,margin:{left:14,right:14},theme:"grid",
+   head:[["EQUIPO","POZO","METROS POR PERFORAR","FECHA ESTIMADA DE TÉRMINO","OBSERVACIONES"]],body,
+   styles:{fontSize:8,cellPadding:3,lineColor:[205,218,230],lineWidth:.15,valign:"middle",textColor:[28,47,70]},
+   headStyles:{fillColor:[21,63,109],textColor:[255,255,255],fontStyle:"bold",halign:"center"},
+   columnStyles:{0:{cellWidth:25,fontStyle:"bold",halign:"center"},1:{cellWidth:28,halign:"center"},2:{cellWidth:35,halign:"center",fontStyle:"bold"},3:{cellWidth:38,halign:"center"},4:{cellWidth:56}},
+   alternateRowStyles:{fillColor:[247,250,253]},
+   didParseCell:function(data){if(data.section==="body"&&data.column.index===2&&filas[data.row.index]){const c=heatColor(filas[data.row.index].metros);data.cell.styles.fillColor=c;data.cell.styles.textColor=[16,74,44];data.cell.styles.fontStyle="bold";}}
+ });
+ y=doc.lastAutoTable.finalY+8;
+ function bloque(titulo,texto,accent,bg){
+   const lines=doc.splitTextToSize(texto||"Sin información.",170),h=Math.max(19,lines.length*4.5+12);
+   if(y+h>282){doc.addPage();y=18}
+   doc.setFillColor(...bg);doc.setDrawColor(211,221,231);doc.roundedRect(14,y,182,h,2,2,"FD");
+   doc.setFillColor(...accent);doc.roundedRect(14,y,4,h,2,2,"F");
+   doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text(titulo,22,y+7);
+   doc.setTextColor(42,55,70);doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text(lines,22,y+13);
+   y+=h+6;
+ }
+ bloque("EQUIPOS PARA COORDINACIÓN",coordinacion,[242,181,68],[255,250,238]);
+ bloque("EQUIPOS QUE NECESITAN ACTUALIZACIÓN EN CRONOS",cronos,[21,63,109],[242,247,252]);
+ const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setDrawColor(215,224,233);doc.line(14,289,196,289);doc.setTextColor(21,63,109);doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.text("DEPARTAMENTO OPERACIONES DDH",14,294);doc.setFont("helvetica","normal");doc.setTextColor(100,115,130);doc.text(`Página ${i} de ${pages}`,196,294,{align:"right"})}
  doc.save(`REPORTE_DIARIO_AVANCE_EQUIPOS_DDH_RC_${fecha}.pdf`);
- setStatus("PDF de Proyección equipos generado y ordenado de menor a mayor por metros por perforar.");
+ setStatus("PDF generado: tabla ordenada de menor a mayor por metros por perforar; escala roja para menos metros y verde para más metros.");
 }
 async function correoProyeccion(){
  const filas=filasProyeccion(); if(filas===null)return;
