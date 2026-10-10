@@ -94,11 +94,12 @@ body{background:linear-gradient(#fff,#f6faff)!important}
 @media(max-width:1100px){.brand-bar{grid-template-columns:1fr 1.2fr 1fr!important}.header-shortcuts{grid-column:1/-1;justify-content:center}.home-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:760px){.brand-bar{grid-template-columns:1fr 1fr!important;padding:12px!important;gap:10px!important}.brand-center{grid-column:1/-1;grid-row:2}.header-shortcuts{grid-column:1/-1;grid-row:3;display:grid!important;grid-template-columns:1fr 1fr;width:100%}.header-shortcuts button{max-width:none!important;font-size:12px!important;padding:11px 8px!important;min-height:50px!important}.brand-logo img{max-height:54px!important}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.home-card{min-height:153px!important;padding:12px 7px!important}.home-card .ico{width:54px!important;height:54px!important;margin-bottom:8px!important}.home-card .ico svg{width:35px;height:35px}.home-card strong{font-size:13px!important}.home-card span:not(.ico){font-size:11px!important}}
 @media print{#view-home>.panel:after{display:none!important}}
-</style>
+#view-materiales .mc-menu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}#view-materiales .mc-menu button{padding:23px 12px;min-height:100px;border-radius:14px;border:1px solid #d5e2ef;background:#f6faff;color:#153f6d;font-weight:700;cursor:pointer;font-size:14px;box-shadow:0 3px 12px #153f6d0a}#view-materiales .mc-menu button.selected{background:#dcecfb;border-color:#759ec9}#view-materiales .mc-section{border:1px solid #dce6ef;border-radius:15px;padding:22px;background:white}#view-materiales .mc-section h3{color:#153f6d;border-bottom:1px solid #e8edf4;padding-bottom:12px}#view-materiales .mc-group{border:1px solid #dce6ef;border-radius:13px;overflow:hidden;margin:16px 0}#view-materiales .mc-group-head{background:#eef4fb;padding:14px 16px;display:flex;justify-content:space-between;color:#153f6d}#view-materiales .mc-group-head small{color:#60778b}#view-materiales .mc-scroll{overflow:auto}#view-materiales .mc-table{border-collapse:collapse;width:100%;min-width:700px;font-size:13px}#view-materiales .mc-table th,#view-materiales .mc-table td{padding:12px;border-bottom:1px solid #e9eef4;text-align:right}#view-materiales .mc-table th:first-child,#view-materiales .mc-table th:nth-child(2),#view-materiales .mc-table td:first-child,#view-materiales .mc-table td:nth-child(2){text-align:left}#view-materiales .mc-table th{font-size:11px;text-transform:uppercase;color:#667e93}#view-materiales .mc-pill{display:inline-block;padding:5px 9px;border-radius:15px;font-weight:700}#view-materiales .mc-pill.critical{background:#fbe3e4;color:#b22b33}#view-materiales .mc-pill.warning{background:#fff0d6;color:#9d6814}#view-materiales .mc-pill.ok{background:#e4f5e9;color:#257747}#view-materiales .mcPedido{width:80px}@media(max-width:850px){#view-materiales .mc-menu{grid-template-columns:repeat(2,1fr)}}</style>
 <script src="./config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <section id="authScreen"><div class="auth-card"><h2>OPERACIONES DDH</h2><p>Acceso de personal Geotec autorizado</p>
@@ -114,10 +115,11 @@ body{background:linear-gradient(#fff,#f6faff)!important}
 <button id="nav-traslado" onclick="showView('traslado')">Nuevo traslado</button>
 <button id="nav-srm" onclick="showView('srm')">Nuevo SRM</button>
 <button id="nav-devolucion" onclick="showView('devolucion')">Devolución de plataforma</button>
-<button id="nav-minuta" onclick="showView('minuta')">Minuta reuniones</button>
+<button data-admin-only hidden id="nav-minuta" onclick="showView('minuta')">Minuta reuniones</button>
 <button id="nav-reparacion" onclick="showView('reparacion')">Reparación / mantención camioneta</button>
 <button id="nav-flota" onclick="showView('flota')">Equipos Flota / Sondas</button>
-<button id="nav-proyeccion" onclick="showView('proyeccion')">Proyección equipos</button>
+<button data-admin-only hidden id="nav-proyeccion" onclick="showView('proyeccion')">Proyección equipos</button>
+<button data-admin-only hidden id="nav-materiales" onclick="showView('materiales')">Materiales críticos</button>
 <button id="nav-coronas" onclick="showView('coronas')">Rebaje de Coronas</button>
 <button id="nav-historial" onclick="showView('historial')">Historial</button>
 <button id="nav-config" onclick="showView('config')">Configuración de correo</button>
@@ -132,10 +134,11 @@ body{background:linear-gradient(#fff,#f6faff)!important}
 <button class="home-card" onclick="showView('traslado')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v10H3z M14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><strong>Traslado de equipo</strong><span>Solicitud, controles, PDF y correo.</span></button>
 <button class="home-card" onclick="showView('srm')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l-3 4 3 4-3 4 7 6 7-6-3-4 3-4-3-4-4 3-4-3z"/><circle cx="12" cy="12" r="3"/><path d="M8 7l8 10M16 7L8 17"/></svg></span><strong>Tricono SRM</strong><span>Preparación de correo SRM.</span></button>
 <button class="home-card" onclick="showView('devolucion')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l4-18 4 18M6 21h12M9 8h6M8 13h8M7 18h10M12 3v18"/></svg></span><strong>Devolución de plataforma</strong><span>Verificación, fotografías, PDF y correo.</span></button>
-<button class="home-card" onclick="showView('minuta')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3"/><circle cx="4.5" cy="9" r="2"/><circle cx="19.5" cy="9" r="2"/><path d="M6 20v-3a6 6 0 0112 0v3zM1 19v-3a4 4 0 014-4M23 19v-3a4 4 0 00-4-4"/></svg></span><strong>Minuta reuniones</strong><span>Acuerdos, responsables y fechas.</span></button>
+<button data-admin-only hidden class="home-card" onclick="showView('minuta')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3"/><circle cx="4.5" cy="9" r="2"/><circle cx="19.5" cy="9" r="2"/><path d="M6 20v-3a6 6 0 0112 0v3zM1 19v-3a4 4 0 014-4M23 19v-3a4 4 0 00-4-4"/></svg></span><strong>Minuta reuniones</strong><span>Acuerdos, responsables y fechas.</span></button>
 <button class="home-card" onclick="showView('reparacion')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h13l4 4v6H3zM16 8v4h4"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><strong>Reparación / Mantención camioneta</strong><span>Solicitud, kilometraje y respaldo fotográfico.</span></button>
 <button class="home-card" onclick="showView('flota')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3a6 6 0 00-7 8L2 16l6 6 5-5a6 6 0 008-7l-4 4-5-5 4-4z"/></svg></span><strong>Equipos Flota / Sondas</strong><span>Reparación y mantención de equipos.</span></button>
-<button class="home-card" onclick="showView('proyeccion')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></span><strong>Proyección equipos</strong><span>Metros por perforar, término proyectado y coordinación.</span></button>
+<button data-admin-only hidden class="home-card" onclick="showView('proyeccion')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg></span><strong>Proyección equipos</strong><span>Metros por perforar, término proyectado y coordinación.</span></button>
+<button data-admin-only hidden class="home-card" onclick="showView('materiales')"><span class="ico">📦</span><strong>Materiales críticos</strong><span>Inventario y solicitud de compras.</span></button>
 <button class="home-card" onclick="showView('coronas')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14l-2 14H7zM5 6V3h3v3m3 0V2h3v4m3 0V3h3v3M7 11h10M8 15h8M9 20h6"/></svg></span><strong>Rebaje de Coronas</strong><span>Guardar registro y preparar correo sin PDF.</span></button>
 
 
@@ -289,15 +292,37 @@ body{background:linear-gradient(#fff,#f6faff)!important}
 <section id="view-proyeccion" class="hidden">
 <div class="panel">
 <div class="module-head"><h2>Proyección equipos</h2><button class="btn btn-white" onclick="showView('home')">← Volver al menú</button></div>
-<div class="note" style="margin-bottom:12px">Complete manualmente o importe un PDF de Cronos o de Proyección. Se consideran equipos con 0 a 100 metros remanentes. Revise los datos antes de generar el reporte.</div>
+<div class="note" style="margin-bottom:12px">Complete manualmente o importe un PDF de Cronos o Proyección (incluido el formato Equipo / Pozo / Remanente / Origen / Destino / Plataforma recepcionada). Revise los datos antes de generar el reporte.</div>
 <div class="ocr-box"><div class="ocr-title">IMPORTAR PDF CRONOS O PROYECCIÓN · PRIMERA PÁGINA</div><div class="ocr-row"><input id="pCronosPDF" type="file" accept="application/pdf,.pdf"><button class="btn btn-blue" id="btnImportarPDF" onclick="importarPDFCronos()">Importar PDF</button></div><div id="ocrEstado" class="note" style="margin-top:8px">Seleccione un PDF original de Cronos o Proyección con texto seleccionable. El archivo se lee en su navegador.</div><div class="ocr-progress"><div id="ocrBar"></div></div></div>
-<div class="projection-wrap"><table class="projection-table" style="min-width:1450px"><thead><tr><th class="num">N°</th><th>Equipo</th><th>Pozo</th><th>Metros remanentes</th><th>Turnos restantes</th><th>Origen</th><th>Destino</th><th>Próxima postura</th><th>Recepción plataforma</th><th>Grupo de recursos</th><th style="min-width:270px">Observaciones</th></tr></thead><tbody id="proyeccionRows"></tbody></table></div>
+<div class="projection-wrap"><table class="projection-table" style="min-width:1150px"><thead><tr><th class="num">N°</th><th>Equipo</th><th>Pozo</th><th>Metros remanentes</th><th>Origen</th><th>Destino</th><th>Recepción plataforma</th><th>Grupo de recursos</th><th style="min-width:270px">Observaciones</th></tr></thead><tbody id="proyeccionRows"></tbody></table></div>
 <h3 class="section-title">Equipos para coordinación</h3><textarea id="pCoordinacion" class="table-input" style="min-height:95px" placeholder="Ingrese equipos y detalle para coordinación"></textarea>
 
 <div class="actions"><button class="btn btn-light" onclick="pdfProyeccion()">Generar PDF</button><button class="btn btn-blue" onclick="correoProyeccion()">Abrir correo para revisar</button><button class="btn btn-white" onclick="limpiarProyeccion()">Limpiar</button></div><small class="warn">Genera primero el PDF y luego adjúntalo manualmente al correo preparado por la aplicación.</small>
 </div>
 </section>
 
+<section id="view-materiales" class="hidden"><div class="panel">
+<div class="module-head"><h2>Control de Materiales Críticos</h2><button class="btn btn-white" onclick="showView('home')">← Volver</button></div>
+<div class="mc-menu"><button onclick="mcShowSection('crear')">＋ Crear ítem</button><button onclick="mcShowSection('inventario')">▤ Ingresar inventario</button><button onclick="mcShowSection('movimiento')">⇄ Ingreso / salida</button><button onclick="mcShowSection('estado')">◉ Ver estado de materiales</button></div><div class="mc-section" id="mcSecCrear" hidden><h3>Crear ítem y definir stock crítico</h3><div class="grid">
+<label>Tipo</label><select id="mcTipo"><option>Brocas</option><option>Barras</option><option>Sensores</option><option>Centralizadores</option><option>Otros</option></select>
+<label>Nombre</label><input id="mcNombre" placeholder="Ej.: Broca HQ">
+<label>Unidad</label><input id="mcUnidad" value="unidades">
+<label>Cantidad crítica</label><input id="mcCritico" type="number" min="0" step="any">
+<label>Stock inicial</label><input id="mcStock" type="number" min="0" step="any" value="0"></div>
+<div class="actions"><button class="btn btn-blue" onclick="crearMaterial()">Crear material</button></div>
+</div><div class="mc-section" id="mcSecInventario" hidden><h3>Ingresar inventario / modificar mínimo</h3><div class="grid">
+<label>Material</label><select id="mcSeleccion"></select>
+<label>Stock disponible</label><input id="mcNuevoStock" type="number" min="0" step="any">
+<label>Cantidad crítica</label><input id="mcNuevoCritico" type="number" min="0" step="any"></div>
+<div class="actions"><button class="btn btn-blue" onclick="actualizarMaterial()">Guardar inventario</button></div>
+<h3>Importar inventario desde Excel</h3><p class="note">El Excel actualiza el stock de materiales existentes, sin cambiar los mínimos críticos. Primero revise las coincidencias y luego confirme.</p><input type="file" id="mcExcel" accept=".xlsx,.xls"><div class="actions"><button class="btn btn-white" onclick="previsualizarInventario()">Revisar Excel</button><button class="btn btn-blue" id="mcConfirmarExcel" disabled onclick="confirmarInventarioExcel()">Confirmar actualización</button></div><div id="mcExcelVista" style="overflow-x:auto"></div>
+</div><div class="mc-section" id="mcSecMovimiento" hidden><h3>Movimiento de bodega</h3><div class="grid"><label>Material</label><select id="mcMovItem"></select><label>Operación</label><select id="mcMovTipo"><option value="salida">Retirar de bodega</option><option value="entrada">Ingresar unidades</option></select><label>Cantidad</label><input id="mcMovCantidad" type="number" min="0.01" step="any"><label>Observación / destino</label><input id="mcMovObs" placeholder="Ej.: Entregado a equipo 159"></div><div class="actions"><button class="btn btn-blue" onclick="registrarMovimientoMaterial()">Registrar movimiento</button></div>
+</div><div class="mc-section" id="mcSecEstado" hidden><h3>Estado de materiales críticos</h3><div class="actions"><button class="btn btn-blue" onclick="pdfMateriales()">Descargar PDF con fecha</button></div>
+<p class="note">Ordenado por déficit porcentual, de más a menos urgente. Marque los materiales e indique cuánto necesita solicitar.</p>
+<div id="mcTabla" style="overflow-x:auto"></div>
+<div class="grid"><label>Correo comprador</label><input id="mcComprador" type="email" placeholder="comprador@geotec.cl"></div>
+<div class="actions"><button class="btn btn-blue" onclick="solicitarMateriales()">Abrir correo de solicitud</button><button class="btn btn-white" onclick="cargarMateriales()">Actualizar informe</button></div>
+</div><div id="mcEstado" class="note"></div></div></section>
 <section id="view-coronas" class="hidden"><div class="panel">
 <div class="module-head"><h2>Rebaje de Coronas</h2><button class="btn btn-white" onclick="showView('home')">← Volver al menú</button></div>
 <div class="grid">
@@ -394,12 +419,17 @@ function fechaCorta(iso){if(!iso)return"";const p=iso.split("-");return p.length
 function fechaHoy(){return fechaCorta(hoyISO())}
 const EQUIPOS_CRONOS=["CH1-83", "CH1-133", "CH1-135", "CH1-140", "CH1-141", "CH1-142", "CH1-143", "CH1-154", "CH1-155", "CH1-156", "CH1-159", "CH1-160", "CH1-161", "CH1-162", "CH9-63", "CH1-120", "CH1-144", "CH1-158", "CH1-146"];
 
+function isAdmin(){return authProfile?.role==='admin'&&authProfile?.status==='approved'}
+function applyAdminVisibility(){document.querySelectorAll('[data-admin-only]').forEach(e=>e.hidden=!isAdmin())}
 function showView(v){
-const views=["home","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","coronas","historial","config"];
+if(['minuta','proyeccion','materiales'].includes(v)&&!isAdmin()){alert('Acceso exclusivo para administradores');return}
+
+const views=["home","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","historial","config"];
 views.forEach(x=>$("view-"+x)?.classList.toggle("hidden",x!==v));
-["traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","coronas","historial","config"].forEach(x=>$("nav-"+x)?.classList.toggle("active",x===v));
+["traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","historial","config"].forEach(x=>$("nav-"+x)?.classList.toggle("active",x===v));
 if(v==="historial")cargarHistorial();
 if(v==="coronas")cargarCoronas();
+if(v==="materiales")cargarMateriales();
 window.scrollTo({top:0,behavior:"smooth"});
 }
 function init(){
@@ -422,7 +452,7 @@ $("cParaFlota").value=localStorage.getItem("ddh_para_flota")||"";
 $("cCCFlota").value=localStorage.getItem("ddh_cc_flota")||"";
 $("devRows").innerHTML=preguntas.map((q,i)=>`<tr><td class="n">${i+1}</td><td>${esc(q)}</td><td><select class="table-input" id="dCumple${i+1}"><option></option><option${i<5?" selected":""}>Sí</option><option>No</option><option${i===5?" selected":""}>N/A</option></select></td><td><input class="table-input" id="dObs${i+1}"></td></tr>`).join("");
 $("minutaRows").innerHTML=Array.from({length:20},(_,i)=>`<tr><td class="n">${i+1}</td><td><input class="table-input" id="mComp${i+1}" placeholder="Compromiso o acuerdo"></td><td><input class="table-input" id="mResp${i+1}" placeholder="Responsable"></td><td><input class="table-input" id="mFecha${i+1}" type="date"></td></tr>`).join("");
-$("proyeccionRows").innerHTML=Array.from({length:20},(_,i)=>`<tr><td class="num">${i+1}</td><td><select id="pEquipo${i+1}" class="table-input"><option value="">Seleccione equipo</option>${EQUIPOS_CRONOS.map(e=>`<option value="${e}">${e}</option>`).join("")}</select></td><td><input id="pPozo${i+1}" placeholder="Pozo"></td><td><input id="pMetros${i+1}" type="number" min="0" step="0.01" placeholder="0"></td><td><input id="pTurnos${i+1}" type="number" min="0" step="1" placeholder="—"></td><td><input id="pSector${i+1}" placeholder="Origen"></td><td><input id="pProximo${i+1}" placeholder="Destino"></td><td><input id="pPostura${i+1}" placeholder="Próxima postura"></td><td><select id="pRecepcion${i+1}" class="table-input"><option value="X">X</option><option value="✓">✓</option></select></td><td><select id="pGrupo${i+1}" class="table-input"><option>Por definir</option><option>Grupo 1</option><option>Grupo 2</option><option>Grupo 3</option></select></td><td><textarea id="pObs${i+1}" class="table-input" rows="3" style="min-width:250px;resize:vertical" placeholder="Observaciones extensas"></textarea></td></tr>`).join("");
+$("proyeccionRows").innerHTML=Array.from({length:20},(_,i)=>`<tr><td class="num">${i+1}</td><td><select id="pEquipo${i+1}" class="table-input"><option value="">Seleccione equipo</option>${EQUIPOS_CRONOS.map(e=>`<option value="${e}">${e}</option>`).join("")}</select></td><td><input id="pPozo${i+1}" placeholder="Pozo"></td><td><input id="pMetros${i+1}" type="number" min="0" step="0.01" placeholder="0"></td><input id="pTurnos${i+1}" type="hidden"><td><input id="pSector${i+1}" placeholder="Origen"></td><td><input id="pProximo${i+1}" placeholder="Destino"></td><input id="pPostura${i+1}" type="hidden"><td><select id="pRecepcion${i+1}" class="table-input"><option value="X">X</option><option value="✓">✓</option></select></td><td><select id="pGrupo${i+1}" class="table-input"><option>Por definir</option><option>Grupo 1</option><option>Grupo 2</option><option>Grupo 3</option></select></td><td><textarea id="pObs${i+1}" class="table-input" rows="3" style="min-width:250px;resize:vertical" placeholder="Observaciones extensas"></textarea></td></tr>`).join("");
 $("dFoto").addEventListener("change",function(){if(this.files.length>3){alert("Puede seleccionar un máximo de 3 fotografías.");this.value="";}});
 $("rFotos").addEventListener("change",function(){if(this.files.length>6){alert("Puede seleccionar un máximo de 6 fotografías.");this.value="";}});
 $("fFotos").addEventListener("change",function(){if(this.files.length>6){alert("Puede seleccionar un máximo de 6 fotografías.");this.value="";}});
@@ -814,6 +844,32 @@ function extraerFilasPDFCronos(items){
  return {rows:found,anchors:anchors.length,attempted};
 }
 
+function extraerFilasPDFResumenOperacional(items){
+ // Reconstrucción por filas y columnas del PDF operacional (15 equipos).
+ // PDF.js puede fragmentar texto y desplazar ligeramente las coordenadas Y.
+ const ts=items.map(i=>({text:String(i.str||"").trim(),x:Number(i.transform?.[4]),y:Number(i.transform?.[5])})).filter(t=>t.text&&Number.isFinite(t.x)&&Number.isFinite(t.y));
+ const anchors=ts.filter(t=>/\bCH\s*[19]\s*[-–]?\s*\d{2,3}\b/i.test(t.text));
+ const found=[],seen=new Set();
+ for(const a of anchors){
+  const match=a.text.match(/CH\s*[19]\s*[-–]?\s*\d{2,3}/i);if(!match)continue;
+  const equipo=match[0].toUpperCase().replace(/\s/g,"").replace("–","-").replace(/^CH([19])(\d)/,"CH$1-$2");
+  const row=ts.filter(t=>Math.abs(t.y-a.y)<3.35).sort((p,q)=>p.x-q.x);
+  const col=(lo,hi)=>row.filter(t=>t.x>=lo&&t.x<hi).map(t=>t.text).join(" ").replace(/\s+/g," ").trim();
+  const all=row.map(t=>t.text).join(" ").replace(/\s+/g," ");
+  let pozo=col(105,167).match(/(?:DDH|DER|AR|PDR|PDU)\s*[-–]?\s*\d+(?:\s*[A-Z])?/i)?.[0]||"";
+  if(!pozo)pozo=all.match(/(?:DDH|DER|AR|PDR|PDU)\s*[-–]?\s*\d+(?:\s*[A-Z])?/i)?.[0]||"";
+  const numTokens=row.filter(t=>t.x>=164&&t.x<204).map(t=>t.text).join(" ");
+  let metros=numeroOCR(numTokens);
+  if(metros===null){const rest=all.slice(all.indexOf(pozo)+pozo.length);metros=numeroOCR(rest.match(/^\s*([\d]+(?:[.,]\d+)?)/)?.[1]||"")}
+  if(!pozo||metros===null||metros<0)continue;
+  const sector=col(202,255),proximo=col(255,340);
+  const estado=col(385,550);
+  const recepcion=/no\s+recepcionad[oa]/i.test(estado)?"X":/recepcionad[oa]/i.test(estado)?"✓":"X";
+  const key=equipo+"|"+pozo;if(seen.has(key))continue;seen.add(key);
+  found.push({equipo,pozo,metros,sector,proximo,recepcion,grupo:"Por definir",obs:""});
+ }
+ return found;
+}
 function extraerFilasPDFProyeccion(items){
  // En este PDF las filas están separadas por apenas 4,2 puntos.
  // Leer por columnas y coordenadas, nunca concatenar filas con tolerancia de 4,5.
@@ -862,15 +918,16 @@ async function importarPDFCronos(){
   pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
   const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
   const content=await (await pdf.getPage(1)).getTextContent();bar.style.width="70%";
-  const newer=extraerFilasPDFProyeccion(content.items);
+  const resumen=extraerFilasPDFResumenOperacional(content.items);
+  const newer=resumen.length?[]:extraerFilasPDFProyeccion(content.items);
   const old=extraerFilasPDFCronos(content.items).rows;
-  const rows=newer.length?newer:old;
+  const rows=resumen.length?resumen:newer.length?newer:old;
   const unique=[...new Map(rows.map(r=>[r.equipo+"|"+r.pozo,r])).values()];
-  const selected=unique.filter(r=>r.metros>=0&&r.metros<=100).sort((a,b)=>a.metros-b.metros).slice(0,20);
-  if(!selected.length){estado.textContent="No se identificaron filas compatibles de 0 a 100 metros. La tabla anterior se conserva.";return}
+  const selected=unique.filter(r=>r.metros>=0&&r.metros<100).sort((a,b)=>a.metros-b.metros).slice(0,20);
+  if(!selected.length){estado.textContent="No se identificaron equipos con menos de 100 metros remanentes. La tabla anterior se conserva.";return}
   limpiarFilasProyeccion();
   selected.forEach((r,i)=>{const n=i+1;$("pEquipo"+n).value=r.equipo;$("pPozo"+n).value=r.pozo;$("pMetros"+n).value=r.metros;$("pTurnos"+n).value=r.turnos??"";$("pSector"+n).value=r.sector??"";$("pProximo"+n).value=r.proximo??"";$("pPostura"+n).value=r.postura??"";$("pRecepcion"+n).value=r.recepcion??"X";});
-  estado.textContent=selected.length+" equipos importados. Formato detectado: "+(newer.length?"Proyección":"Cronos")+". Revise los campos antes de generar el PDF.";
+  estado.textContent=selected.length+" equipos importados. Formato detectado: "+(resumen.length?"Proyección operacional":newer.length?"Proyección":"Cronos")+". Revise los campos antes de generar el PDF.";
   bar.style.width="100%";setStatus("Proyección importada correctamente.");
  }catch(e){console.error(e);estado.textContent="Error de lectura: "+(e.message||e)}
  finally{btn.disabled=false;setTimeout(()=>bar.style.width="0",1600)}
@@ -882,7 +939,7 @@ function filasProyeccion(){
   const equipo=val("pEquipo"+i),pozo=val("pPozo"+i),metrosTxt=val("pMetros"+i);
   if(!(equipo||pozo||metrosTxt||val("pObs"+i)))continue;
   if(!equipo||!pozo||metrosTxt===""||!Number.isFinite(Number(metrosTxt))){alert("Complete equipo, pozo y metros de la fila "+i);return null}
-  const metros=Number(metrosTxt);if(metros<0||metros>100)continue;
+  const metros=Number(metrosTxt);if(metros<0)continue;
   rows.push({equipo,pozo,metros,turnos:val("pTurnos"+i),sector:val("pSector"+i),proximo:val("pProximo"+i),postura:val("pPostura"+i),recepcion:val("pRecepcion"+i),grupo:val("pGrupo"+i),obs:val("pObs"+i)});
  }
  return rows.sort((a,b)=>a.metros-b.metros);
@@ -895,30 +952,21 @@ async function pdfProyeccion(compartir=false){
  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4",orientation:"landscape"}),fecha=fechaHoy();
  try{doc.addImage(LOGO_GEOTEC,"PNG",12,7,36,17)}catch(e){}
  doc.setFont("helvetica","bold");doc.setTextColor(21,63,109);doc.setFontSize(14);doc.text("PROYECCIÓN DE EQUIPOS",148.5,18,{align:"center"});
- doc.setFontSize(8);doc.text("EQUIPOS CON 0 A 100 METROS REMANENTES",148.5,24,{align:"center"});
+ doc.setFontSize(8);doc.text("EQUIPOS ORDENADOS POR METROS REMANENTES",148.5,24,{align:"center"});
  doc.setFont("helvetica","normal");doc.text("Fecha: "+fecha+"  |  Equipos: "+filas.length,12,32);
  doc.autoTable({startY:37,margin:{left:9,right:9,bottom:15},theme:"grid",
- head:[["EQUIPO","POZO","METROS REM.","TURNOS REST.","ORIGEN","DESTINO","PRÓXIMA POSTURA","RECEPCIÓN","GRUPO RECURSOS","OBSERVACIONES"]],
- body:filas.map(f=>[f.equipo,f.pozo,fmtMetros(f.metros),f.turnos||"—",f.sector||"—",f.proximo||"—",f.postura||"—",f.recepcion,f.grupo,f.obs||"—"]),
- styles:{fontSize:7,cellPadding:2,overflow:"linebreak",valign:"top",lineColor:[205,218,230],lineWidth:.15},
+ head:[["EQUIPO","POZO","METROS R.","ORIGEN","DESTINO","GRUPO RECURSOS","RECEPCIÓN PLATAFORMA","OBS."]],
+ body:filas.map(f=>[f.equipo,f.pozo,fmtMetros(f.metros),f.sector||"—",f.proximo||"—",f.grupo||"Por definir",f.recepcion==="✓"?"Recepcionada":"No recepcionada",f.obs||"—"]),
+ styles:{fontSize:8,cellPadding:2.3,overflow:"linebreak",valign:"middle",lineColor:[205,218,230],lineWidth:.15},
  headStyles:{fillColor:[21,63,109],textColor:[255,255,255],fontStyle:"bold"},
- columnStyles:{0:{cellWidth:23},1:{cellWidth:30},2:{cellWidth:20},3:{cellWidth:18},4:{cellWidth:32},5:{cellWidth:28},6:{cellWidth:36},7:{cellWidth:18,halign:"center"},8:{cellWidth:26},9:{cellWidth:49}},
+ columnStyles:{0:{cellWidth:23},1:{cellWidth:30},2:{cellWidth:21},3:{cellWidth:39},4:{cellWidth:39},5:{cellWidth:30},6:{cellWidth:39},7:{cellWidth:58}},
  alternateRowStyles:{fillColor:[246,249,252]},
  didParseCell:function(data){
   if(data.section!=="body")return;
-  const fila=filas[data.row.index];if(!fila)return;
-  if(data.column.index===2){
-   const m=fila.metros;
-   data.cell.styles.fillColor=m<=30?[240,111,101]:m<=60?[249,171,85]:[255,229,113];
-   data.cell.styles.textColor=[33,39,48];
-   data.cell.styles.fontStyle="bold";
-  }
-  if(data.column.index===8){
-   const colores={"Grupo 1":[191,220,251],"Grupo 2":[194,231,199],"Grupo 3":[221,205,248],"Por definir":[231,234,239]};
-   data.cell.styles.fillColor=colores[fila.grupo]||colores["Por definir"];
-   data.cell.styles.textColor=[33,39,48];
-   data.cell.styles.fontStyle="bold";
-  }
+  const f=filas[data.row.index];if(!f)return;
+  if(data.column.index===2){const m=f.metros;data.cell.styles.fillColor=m<=30?[240,111,101]:m<=60?[249,171,85]:m<=100?[255,229,113]:[233,238,244];data.cell.styles.textColor=[33,39,48];data.cell.styles.fontStyle="bold"}
+  if(data.column.index===5){const colors={"Grupo 1":[191,220,251],"Grupo 2":[194,231,199],"Grupo 3":[221,205,248],"Por definir":[231,234,239]};data.cell.styles.fillColor=colors[f.grupo]||colors["Por definir"];data.cell.styles.textColor=[33,39,48]}
+  if(data.column.index===6){data.cell.styles.fillColor=f.recepcion==="✓"?[211,238,217]:[251,217,217];data.cell.styles.textColor=f.recepcion==="✓"?[28,100,54]:[158,35,42];data.cell.styles.fontStyle="bold"}
  }});
  const coordinacion=val("pCoordinacion").trim();
  if(coordinacion){
@@ -942,10 +990,23 @@ async function pdfProyeccion(compartir=false){
  doc.save(name);setStatus("PDF de proyección generado.");
 }
 async function correoProyeccion(){
- const filas=filasProyeccion();if(filas===null)return;if(!filas.length){alert("No hay equipos para enviar.");return}
+ const filas=filasProyeccion();if(filas===null)return;
+ if(!filas.length){alert("No hay equipos para enviar.");return}
  const fecha=fechaHoy();
- mailto("Reporte diario de avance equipos DDH + RC ("+fecha+")","Estimados:\\n\\nAdjunto reporte de proyección de equipos con 0 a 100 metros remanentes.\\n\\nSaludos,\\nDEPARTAMENTO OPERACIONES DDH");
- setStatus("Correo preparado. Adjunte el PDF generado.");
+ const coordinacion=val("pCoordinacion").trim();
+ const cuerpo=[
+  "Estimados:",
+  "",
+  "Junto con saludar, adjunto la planificación a corto plazo de equipos DDH + RC, correspondiente al "+fecha+".",
+  "",
+  "EQUIPOS PARA COORDINACIÓN",
+  coordinacion||"Sin equipos adicionales para coordinación.",
+  "",
+  "Saludos,",
+  "DEPARTAMENTO OPERACIONES DDH"
+ ].join("\n");
+ mailto("Proyección a corto plazo equipos DDH + RC ("+fecha+")",cuerpo);
+ setStatus("Correo preparado con el mismo detalle de coordinación del PDF. Adjunte el PDF generado.");
 }
 function limpiarProyeccion(){limpiarFilasProyeccion();$("pCoordinacion").value="";setStatus("Proyección equipos limpiada.")}
 
@@ -1185,6 +1246,106 @@ setStatus(fotoFiles.length?`PDF de devolución generado con ${fotoFiles.length} 
 }
 
 
+
+
+async function registrarMovimientoMaterial(){
+ if(!isAdmin())return;
+ const p_material_id=Number(val("mcMovItem")),p_tipo=val("mcMovTipo"),p_cantidad=Number(val("mcMovCantidad")),p_observacion=val("mcMovObs");
+ if(!p_material_id||!Number.isFinite(p_cantidad)||p_cantidad<=0)return alert("Seleccione material y cantidad válida.");
+ try{const r=await fetch(AUTH_PROJECT_URL+"/rest/v1/rpc/registrar_movimiento_material",{method:"POST",headers:{"Authorization":"Bearer "+await validToken(),"apikey":AUTH_PUBLIC_KEY,"Content-Type":"application/json"},body:JSON.stringify({p_material_id,p_tipo,p_cantidad,p_observacion})});if(!r.ok)throw new Error(await r.text());await cargarMateriales();mcEstado("Movimiento registrado. Nuevo stock: "+await r.json());$("mcMovCantidad").value="";$("mcMovObs").value=""}catch(e){mcEstado("No se pudo registrar movimiento: "+e.message)}
+}
+let mcImportPreview=[];
+function mcNormalize(x){return String(x??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"")}
+function mcCellNum(x){if(typeof x==="number")return x;const t=String(x??"").trim().replace(/\s/g,"").replace(/\./g,"").replace(",",".");return t!==""&&Number.isFinite(Number(t))?Number(t):null}
+async function previsualizarInventario(){
+ const file=$("mcExcel").files?.[0];if(!file)return alert("Seleccione un archivo Excel.");
+ if(!window.XLSX)return alert("No se cargó el lector Excel. Recargue la página.");
+ try{
+ const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});mcImportPreview=[];let missing=[];
+ for(const sheet of wb.SheetNames){
+ const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:""});
+ let headers=-1,nameCol=-1,stockCol=-1;
+ for(let i=0;i<Math.min(rows.length,25);i++){
+ const cells=rows[i].map(mcNormalize);
+ const nc=cells.findIndex(x=>/DESCRIPCION|MATERIAL|PRODUCTO|DETALLE|NOMBRE/.test(x));
+ const sc=cells.findIndex(x=>/SALDO|STOCKACTUAL|EXISTENCIA|CANTIDADDISPONIBLE|STOCK/.test(x)&&!/CRITIC|MINIM/.test(x));
+ if(nc>=0&&sc>=0){headers=i;nameCol=nc;stockCol=sc;break}
+ }
+ if(headers<0){missing.push(sheet+": sin encabezados reconocibles");continue}
+ for(let i=headers+1;i<rows.length;i++){
+ const name=String(rows[i][nameCol]??"").trim(),stock=mcCellNum(rows[i][stockCol]);
+ if(!name||stock===null||stock<0)continue;
+ const matches=materialesCache.filter(m=>mcNormalize(m.nombre)===mcNormalize(name));
+ mcImportPreview.push({sheet,row:i+1,name,stock,match:matches.length===1?matches[0]:null,status:matches.length===1?"Coincide":matches.length>1?"Ambiguo":"No registrado"});
+ }
+ }
+ let html='<table><tr><th>Hoja</th><th>Material Excel</th><th>Stock nuevo</th><th>Coincidencia</th></tr>';
+ for(const x of mcImportPreview)html+='<tr><td>'+esc(x.sheet)+'</td><td>'+esc(x.name)+'</td><td>'+x.stock+'</td><td>'+esc(x.match?x.match.nombre:x.status)+'</td></tr>';
+ $("mcExcelVista").innerHTML=html+'</table>'+(missing.length?'<p>'+esc(missing.join("; "))+'</p>':'');
+ $("mcConfirmarExcel").disabled=!mcImportPreview.some(x=>x.match);
+ mcEstado("Coincidencias: "+mcImportPreview.filter(x=>x.match).length+". Sin coincidencia: "+mcImportPreview.filter(x=>!x.match).length+". Revise antes de confirmar.");
+ }catch(e){mcEstado("Error leyendo Excel: "+e.message)}
+}
+async function confirmarInventarioExcel(){
+ if(!isAdmin())return;
+ const good=mcImportPreview.filter(x=>x.match);
+ const ids=good.map(x=>x.match.id);
+ if(new Set(ids).size!==ids.length)return alert("Un material aparece varias veces en el Excel. Revise antes de importar.");
+ if(!good.length)return alert("No hay coincidencias.");
+ if(!confirm("Actualizar stock de "+good.length+" materiales? No se modificarán los mínimos críticos."))return;
+ let ok=0,errors=[];
+ for(const x of good){try{
+ await mcRequest("?id=eq."+x.match.id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({stock:x.stock,actualizado_en:new Date().toISOString()})});
+ ok++;
+ }catch(e){errors.push(x.name+": "+e.message)}}
+ mcImportPreview=[];$("mcConfirmarExcel").disabled=true;await cargarMateriales();
+ mcEstado("Inventario actualizado: "+ok+" materiales. "+(errors.length?"Errores: "+errors.join("; "):"")+" No se modificó el stock crítico.");
+}
+
+function mcShowSection(v){if(!isAdmin())return;const names={crear:"Crear",inventario:"Inventario",movimiento:"Movimiento",estado:"Estado"};for(const [key,id] of Object.entries(names))$("mcSec"+id).hidden=key!==v;document.querySelectorAll("#view-materiales .mc-menu button").forEach((b,i)=>b.classList.toggle("selected",Object.keys(names)[i]===v))}
+function pdfMateriales(){if(!isAdmin())return;if(!window.jspdf?.jsPDF)return alert("No se cargó el generador PDF.");const d=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});d.setFontSize(17);d.text("GEOTEC - ESTADO DE MATERIALES CRITICOS",14,18);d.setFontSize(10);d.text("Fecha: "+new Date().toLocaleDateString("es-CL"),14,26);const groups=new Map();for(const m of materialesCache){if(!groups.has(m.tipo))groups.set(m.tipo,[]);groups.get(m.tipo).push(m)}const pct=m=>m.cantidad_critica>0?Math.max(0,(m.cantidad_critica-m.stock)/m.cantidad_critica*100):0;let y=36;for(const [tipo,items] of [...groups.entries()].sort((a,b)=>Math.max(...b[1].map(pct))-Math.max(...a[1].map(pct)))){if(y>180){d.addPage();y=18}d.setFont("helvetica","bold");d.setFontSize(12);d.text(tipo,14,y);y+=8;d.setFont("helvetica","normal");d.setFontSize(9);for(const m of items.sort(mcOrden)){if(y>194){d.addPage();y=18}d.text(d.splitTextToSize(m.nombre,125)[0],14,y);d.text("Critico: "+m.cantidad_critica,153,y);d.text("Stock: "+m.stock,191,y);d.text("Dif.: "+(m.stock-m.cantidad_critica),222,y);d.text("Deficit: "+pct(m).toFixed(1)+"%",252,y);y+=7}y+=5}d.save("MATERIALES_CRITICOS_"+new Date().toISOString().slice(0,10)+".pdf")}
+let materialesCache=[];
+async function mcRequest(path="",opts={}){
+ const r=await fetch(AUTH_PROJECT_URL+"/rest/v1/materiales_criticos"+path,{...opts,headers:{"Authorization":"Bearer "+await validToken(),"apikey":AUTH_PUBLIC_KEY,"Content-Type":"application/json","Accept":"application/json",...(opts.headers||{})}});
+ if(!r.ok)throw new Error("Supabase "+r.status+": "+await r.text());
+ if(r.status===204||opts.headers?.Prefer==="return=minimal")return null;
+ return await r.json();
+}
+function mcEstado(t){$("mcEstado").textContent=t}
+function mcOrden(a,b){const d=x=>Number(x.cantidad_critica)>0?Math.max(0,(x.cantidad_critica-x.stock)/x.cantidad_critica):0;return d(b)-d(a)||String(a.tipo).localeCompare(String(b.tipo))||String(a.nombre).localeCompare(String(b.nombre))}
+async function cargarMateriales(){
+ if(!isAdmin())return;
+ try{
+ materialesCache=await mcRequest("?select=*&order=tipo.asc,nombre.asc");
+ const sel=$("mcSeleccion");
+ const mov=$("mcMovItem");mov.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+m.nombre)+'</option>').join("");
+ sel.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+m.nombre)+'</option>').join("");
+ sel.onchange=()=>{const m=materialesCache.find(x=>String(x.id)===sel.value);$("mcNuevoStock").value=m?.stock??"";$("mcNuevoCritico").value=m?.cantidad_critica??""};
+ const deficit=m=>Number(m.cantidad_critica)>0?Math.max(0,(Number(m.cantidad_critica)-Number(m.stock))/Number(m.cantidad_critica)):0;const groups=new Map();for(const m of materialesCache){if(!groups.has(m.tipo))groups.set(m.tipo,[]);groups.get(m.tipo).push(m)}const ordered=[...groups.entries()].sort((a,b)=>Math.max(...b[1].map(deficit))-Math.max(...a[1].map(deficit))||a[0].localeCompare(b[0],"es"));let html='';for(const [tipo,items] of ordered){items.sort(mcOrden);html+='<div class="mc-group"><div class="mc-group-head"><strong>'+esc(tipo)+'</strong><small>'+items.length+' ítems · '+items.filter(m=>deficit(m)>0).length+' bajo mínimo</small></div><div class="mc-scroll"><table class="mc-table"><thead><tr><th>Elegir</th><th>Material</th><th>Crítico</th><th>Stock</th><th>Diferencia</th><th>Déficit</th><th>Cantidad a pedir</th></tr></thead><tbody>';for(const m of items){const dif=Number(m.stock)-Number(m.cantidad_critica),pct=deficit(m)*100,level=pct>=50?"critical":pct>0?"warning":"ok";html+='<tr><td><input type="checkbox" class="mcCheck" data-id="'+m.id+'"></td><td><strong>'+esc(m.nombre)+'</strong> <small>'+esc(m.unidad)+'</small></td><td>'+m.cantidad_critica+'</td><td>'+m.stock+'</td><td>'+dif+'</td><td><span class="mc-pill '+level+'">'+(pct>0?pct.toFixed(1)+"%":"OK")+'</span></td><td><input class="mcPedido" data-id="'+m.id+'" type="number" min="0.01" step="any" value="'+Math.max(0,-dif)+'"></td></tr>'}html+='</tbody></table></div></div>'}$("mcTabla").innerHTML=html;mcEstado(materialesCache.length+" materiales registrados.");
+ }catch(e){mcEstado("Error al consultar materiales: "+e.message)}
+}
+async function crearMaterial(){
+ if(!isAdmin())return;
+ const tipo=val("mcTipo"),nombre=val("mcNombre"),unidad=val("mcUnidad")||"unidades",cantidad_critica=Number(val("mcCritico")),stock=Number(val("mcStock"));
+ if(!nombre||val("mcCritico")===""||val("mcStock")===""||![cantidad_critica,stock].every(Number.isFinite)||cantidad_critica<0||stock<0)return alert("Complete nombre, cantidad crítica y stock válidos.");
+ try{await mcRequest("",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({tipo,nombre,unidad,cantidad_critica,stock})});$("mcNombre").value="";await cargarMateriales();mcEstado("Material creado.")}catch(e){mcEstado("No se pudo crear: "+e.message)}
+}
+async function actualizarMaterial(){
+ if(!isAdmin())return;
+ const id=val("mcSeleccion"),stock=Number(val("mcNuevoStock")),cantidad_critica=Number(val("mcNuevoCritico"));
+ if(!id||val("mcNuevoStock")===""||val("mcNuevoCritico")===""||!Number.isFinite(stock)||!Number.isFinite(cantidad_critica)||stock<0||cantidad_critica<0)return alert("Seleccione material e ingrese valores válidos.");
+ try{await mcRequest("?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({stock,cantidad_critica,actualizado_en:new Date().toISOString()})});await cargarMateriales();mcEstado("Inventario actualizado.")}catch(e){mcEstado("No se pudo actualizar: "+e.message)}
+}
+function solicitarMateriales(){
+ if(!isAdmin())return;
+ const items=[...document.querySelectorAll(".mcCheck:checked")].map(c=>{const m=materialesCache.find(x=>String(x.id)===c.dataset.id);const n=Number(document.querySelector('.mcPedido[data-id="'+c.dataset.id+'"]').value);return {m,n}}).filter(x=>x.m);
+ if(!items.length)return alert("Marque al menos un material.");
+ if(items.some(x=>!Number.isFinite(x.n)||x.n<=0))return alert("Indique cantidades mayores a cero.");
+ const comprador=val("mcComprador");if(!comprador||!/^\S+@\S+\.\S+$/.test(comprador))return alert("Ingrese el correo del comprador.");
+ const body="Estimados:\n\nSolicito gestionar la compra de los siguientes materiales críticos:\n\n"+items.map((x,i)=>(i+1)+". "+x.m.tipo+" / "+x.m.nombre+"\nCantidad solicitada: "+x.n+" "+x.m.unidad+"\nStock actual: "+x.m.stock+" | Cantidad crítica: "+x.m.cantidad_critica).join("\n\n")+"\n\nFavor confirmar disponibilidad y plazo de entrega.\n\nSaludos.";
+ window.location.href="mailto:"+encodeURIComponent(comprador)+"?subject="+encodeURIComponent("SOLICITUD DE COMPRA - MATERIALES CRÍTICOS")+"&body="+encodeURIComponent(body);
+}
+
 // Rebaje de Coronas: tabla y permisos independientes del historial general.
 const CORONAS_API=AUTH_PROJECT_URL+"/rest/v1/rebajas_coronas";
 let coronasCache=[];
@@ -1252,7 +1413,7 @@ async function profileFetch(){
  const r=await fetch(AUTH_PROJECT_URL+'/rest/v1/ddh_profiles?select=id,email,role,status&id=eq.'+encodeURIComponent(authSession.user.id),{headers:{'apikey':AUTH_PUBLIC_KEY,'Authorization':'Bearer '+await validToken()}});
  if(!r.ok)throw new Error('No se pudo verificar el estado de autorización.');const rows=await r.json();return rows[0]||null;
 }
-function lockApp(message=''){$('appShell').hidden=true;$('authScreen').hidden=false;$('adminPanel').hidden=true;$('adminToggle').hidden=true;authProfile=null;authMessage(message)}
+function lockApp(message=''){$('appShell').hidden=true;$('authScreen').hidden=false;$('adminPanel').hidden=true;$('adminToggle').hidden=true;authProfile=null;applyAdminVisibility();authMessage(message)}
 async function enterApp(){
  if(!authSession?.access_token)return lockApp();
  try{
@@ -1261,7 +1422,7 @@ async function enterApp(){
  authSession.user=user;authProfile=await profileFetch();
  if(!authProfile||authProfile.status!=='approved')return lockApp(authProfile?.status==='disabled'?'Tu cuenta está desactivada. Contacta al administrador.':'Cuenta pendiente de aprobación del administrador.');
  $('authScreen').hidden=true;$('appShell').hidden=false;$('sessionEmail').textContent=user.email;
- $('adminToggle').hidden=authProfile.role!=='admin';
+ $('adminToggle').hidden=authProfile.role!=='admin';applyAdminVisibility();
  }catch(e){lockApp('No se pudo validar tu acceso: '+e.message)}
 }
 async function login(ev){ev.preventDefault();try{if(!corporate(authEmail()))throw new Error('Utiliza tu correo @geotec.cl.');authMessage('Verificando acceso…');const s=await authRequest('/token?grant_type=password','POST',{email:authEmail(),password:$('authPassword').value});storeSession(s);$('authPassword').value='';await enterApp()}catch(e){authMessage(e.message)}}
