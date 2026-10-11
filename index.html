@@ -845,26 +845,21 @@ function extraerFilasPDFCronos(items){
 }
 
 function extraerFilasPDFResumenOperacional(items){
- // Reconstrucción por filas y columnas del PDF operacional (15 equipos).
- // PDF.js puede fragmentar texto y desplazar ligeramente las coordenadas Y.
- const ts=items.map(i=>({text:String(i.str||"").trim(),x:Number(i.transform?.[4]),y:Number(i.transform?.[5])})).filter(t=>t.text&&Number.isFinite(t.x)&&Number.isFinite(t.y));
- const anchors=ts.filter(t=>/\bCH\s*[19]\s*[-–]?\s*\d{2,3}\b/i.test(t.text));
+ // PDF operacional: leer las columnas por posición RELATIVA al equipo.
+ // Evita mezclar filas muy juntas y no exige que todos los textos tengan idéntica coordenada Y.
+ const tokens=items.map(i=>({text:String(i.str||"").trim(),x:Number(i.transform?.[4]),y:Number(i.transform?.[5])})).filter(t=>t.text&&Number.isFinite(t.x)&&Number.isFinite(t.y));
+ const anchors=tokens.filter(t=>/^CH\s*[19]\s*[-–]?\s*\d{2,3}$/i.test(t.text));
  const found=[],seen=new Set();
  for(const a of anchors){
-  const match=a.text.match(/CH\s*[19]\s*[-–]?\s*\d{2,3}/i);if(!match)continue;
-  const equipo=match[0].toUpperCase().replace(/\s/g,"").replace("–","-").replace(/^CH([19])(\d)/,"CH$1-$2");
-  const row=ts.filter(t=>Math.abs(t.y-a.y)<3.35).sort((p,q)=>p.x-q.x);
-  const col=(lo,hi)=>row.filter(t=>t.x>=lo&&t.x<hi).map(t=>t.text).join(" ").replace(/\s+/g," ").trim();
-  const all=row.map(t=>t.text).join(" ").replace(/\s+/g," ");
-  let pozo=col(105,167).match(/(?:DDH|DER|AR|PDR|PDU)\s*[-–]?\s*\d+(?:\s*[A-Z])?/i)?.[0]||"";
-  if(!pozo)pozo=all.match(/(?:DDH|DER|AR|PDR|PDU)\s*[-–]?\s*\d+(?:\s*[A-Z])?/i)?.[0]||"";
-  const numTokens=row.filter(t=>t.x>=164&&t.x<204).map(t=>t.text).join(" ");
-  let metros=numeroOCR(numTokens);
-  if(metros===null){const rest=all.slice(all.indexOf(pozo)+pozo.length);metros=numeroOCR(rest.match(/^\s*([\d]+(?:[.,]\d+)?)/)?.[1]||"")}
-  if(!pozo||metros===null||metros<0)continue;
-  const sector=col(202,255),proximo=col(255,340);
-  const estado=col(385,550);
-  const recepcion=/no\s+recepcionad[oa]/i.test(estado)?"X":/recepcionad[oa]/i.test(estado)?"✓":"X";
+  const equipo=a.text.toUpperCase().replace(/\s/g,"").replace("–","-").replace(/^CH([19])(\d)/,"CH$1-$2");
+  const row=tokens.filter(t=>Math.abs(t.y-a.y)<2.2).sort((p,q)=>p.x-q.x);
+  const col=(lo,hi)=>row.filter(t=>t.x-a.x>=lo&&t.x-a.x<hi).map(t=>t.text).join(" ").trim();
+  const pozo=col(40,104).replace(/\s+/g," ").trim();
+  const metros=numeroOCR(col(104,143));
+  if(!/^(?:DDH|DER|AR|PDR|PDU)\s*[-–]?\s*\d+/i.test(pozo)||metros===null||metros<0)continue;
+  const sector=col(143,195),proximo=col(195,320);
+  const estado=col(320,540);
+  const recepcion=/\bno\s+recepcionad[oa]\b/i.test(estado)?"X":/recepcionad[oa]/i.test(estado)?"✓":"X";
   const key=equipo+"|"+pozo;if(seen.has(key))continue;seen.add(key);
   found.push({equipo,pozo,metros,sector,proximo,recepcion,grupo:"Por definir",obs:""});
  }
