@@ -1,4 +1,4 @@
-const CACHE='operaciones-ddh-oficial-20261015-modern-v1';
+const CACHE='operaciones-ddh-oficial-20261015-color-v2';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-ddh-realista-192.png','./icon-ddh-realista-512.png','./config.js'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('operaciones-ddh-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
