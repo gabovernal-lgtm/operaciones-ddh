@@ -410,19 +410,23 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 
 <section id="view-materiales" class="hidden"><div class="panel">
 <div class="module-head"><h2>Control de Materiales Críticos</h2><button class="btn btn-white" onclick="showView('home')">← Volver</button></div>
-<div class="mc-menu"><button onclick="mcShowSection('crear')">＋ Crear ítem</button><button onclick="mcShowSection('inventario')">▤ Ingresar inventario</button><button onclick="mcShowSection('movimiento')">⇄ Ingreso / salida</button><button onclick="mcShowSection('estado')">◉ Ver estado de materiales</button></div><div class="mc-section" id="mcSecCrear" hidden><h3>Crear ítem y definir stock crítico</h3><div class="grid">
+<div class="mc-menu"><button onclick="mcShowSection('crear')">＋ Crear ítem</button><button onclick="mcShowSection('inventario')">▤ Editar / Inventario</button><button onclick="mcShowSection('movimiento')">⇄ Ingreso / salida</button><button onclick="mcShowSection('estado')">◉ Ver estado de materiales</button></div><div class="mc-section" id="mcSecCrear" hidden><h3>Crear ítem y definir stock crítico</h3><div class="grid">
 <label>Tipo</label><select id="mcTipo"><option>Brocas</option><option>Barras</option><option>Sensores</option><option>Centralizadores</option><option>Otros</option></select>
 <label>Nombre</label><input id="mcNombre" placeholder="Ej.: Broca HQ">
 <label>Unidad</label><input id="mcUnidad" value="unidades">
 <label>Cantidad crítica</label><input id="mcCritico" type="number" min="0" step="any">
 <label>Stock inicial</label><input id="mcStock" type="number" min="0" step="any" value="0"></div>
 <div class="actions"><button class="btn btn-blue" onclick="crearMaterial()">Crear material</button></div>
-</div><div class="mc-section" id="mcSecInventario" hidden><h3>Ingresar inventario / modificar mínimo</h3><div class="grid">
+</div><div class="mc-section" id="mcSecInventario" hidden><h3>Editar material e inventario</h3><div class="grid">
 <label>Material</label><select id="mcSeleccion"></select>
+<label>Código ITEM</label><input id="mcEditarCodigo" maxlength="80">
+<label>Tipo</label><input id="mcEditarTipo" maxlength="120">
+<label>Nombre / descripción</label><input id="mcEditarNombre" maxlength="500">
+<label>Unidad</label><input id="mcEditarUnidad" maxlength="40">
 <label>Stock disponible</label><input id="mcNuevoStock" type="number" min="0" step="any">
 <label>Cantidad crítica</label><input id="mcNuevoCritico" type="number" min="0" step="any"></div>
-<div class="actions"><button class="btn btn-blue" onclick="actualizarMaterial()">Guardar inventario</button></div>
-<h3>Importar inventario desde Excel</h3><p class="note">El Excel actualiza el stock de materiales existentes, sin cambiar los mínimos críticos. Primero revise las coincidencias y luego confirme.</p><input type="file" id="mcExcel" accept=".xlsx,.xls"><div class="actions"><button class="btn btn-white" onclick="previsualizarInventario()">Revisar Excel</button><button class="btn btn-blue" id="mcConfirmarExcel" disabled onclick="confirmarInventarioExcel()">Confirmar actualización</button></div><div id="mcExcelVista" style="overflow-x:auto"></div>
+<div class="actions"><button class="btn btn-blue" onclick="actualizarMaterial()">Guardar cambios</button></div>
+<h3>Importar inventario desde Excel</h3><p class="note">Formato de bodega: ITEM, DESCRIPCION, UN, SALDO y STOCK CRITICO. Permite crear ítems nuevos y actualizar saldos. Los mínimos existentes se conservan; en ítems nuevos puede definirlos después.</p><input type="file" id="mcExcel" accept=".xlsx,.xls"><div class="actions"><button class="btn btn-white" onclick="previsualizarInventario()">Revisar Excel</button><button class="btn btn-blue" id="mcConfirmarExcel" disabled onclick="confirmarInventarioExcel()">Confirmar actualización</button></div><div id="mcExcelVista" style="overflow-x:auto"></div>
 </div><div class="mc-section" id="mcSecMovimiento" hidden><h3>Movimiento de bodega</h3><div class="grid"><label>Material</label><select id="mcMovItem"></select><label>Operación</label><select id="mcMovTipo"><option value="salida">Retirar de bodega</option><option value="entrada">Ingresar unidades</option></select><label>Cantidad</label><input id="mcMovCantidad" type="number" min="0.01" step="any"><label>Observación / destino</label><input id="mcMovObs" placeholder="Ej.: Entregado a equipo 159"></div><div class="actions"><button class="btn btn-blue" onclick="registrarMovimientoMaterial()">Registrar movimiento</button></div>
 </div><div class="mc-section" id="mcSecEstado" hidden><h3>Estado de materiales críticos</h3><div class="actions"><button class="btn btn-blue" onclick="pdfMateriales()">Descargar PDF con fecha</button></div>
 <p class="note">Ordenado por déficit porcentual, de más a menos urgente. Marque los materiales e indique cuánto necesita solicitar.</p>
@@ -1452,52 +1456,83 @@ async function registrarMovimientoMaterial(){
 let mcImportPreview=[];
 function mcNormalize(x){return String(x??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"")}
 function mcCellNum(x){if(typeof x==="number")return x;const t=String(x??"").trim().replace(/\s/g,"").replace(/\./g,"").replace(",",".");return t!==""&&Number.isFinite(Number(t))?Number(t):null}
+function mcTipoBodega(nombre){
+ const first=mcNormalize(nombre.split(/\s+/)[0]);
+ return ({BROCA:"Brocas",ESCAREADOR:"Escareadores",BIT:"Bits",TRICONO:"Triconos",ZAPATA:"Zapatas"})[first]||"Otros";
+}
+function mcLeerBodega(rows,materiales){
+ let header=-1,cols;
+ for(let i=0;i<Math.min(rows.length,25);i++){
+  const cells=rows[i].map(mcNormalize);
+  const nombre=cells.findIndex(x=>/DESCRIPCION|MATERIAL|PRODUCTO|DETALLE|NOMBRE/.test(x));
+  const stock=cells.findIndex(x=>/SALDO|STOCKACTUAL|EXISTENCIA|CANTIDADDISPONIBLE|STOCK/.test(x)&&!/CRITIC|MINIM/.test(x));
+  if(nombre>=0&&stock>=0){header=i;cols={nombre,stock,codigo:cells.findIndex(x=>/^(ITEM|CODIGO|CODIGOITEM|CODIGOMATERIAL)$/.test(x)),unidad:cells.findIndex(x=>/^(UN|UNIDAD|UM)$/.test(x)),critico:cells.findIndex(x=>/CRITIC|MINIM/.test(x))};break}
+ }
+ if(header<0)throw new Error("No se reconocen DESCRIPCION y SALDO en el Excel.");
+ const grouped=new Map();
+ for(let i=header+1;i<rows.length;i++){
+  const row=rows[i],nombre=String(row[cols.nombre]??"").trim();
+  if(!nombre)continue;
+  const stock=mcCellNum(row[cols.stock]);
+  if(stock===null||stock<0)throw new Error("Saldo inválido en fila "+(i+1));
+  const codigo_item=String(row[cols.codigo]??"").trim(),unidad=String(row[cols.unidad]??"").trim()||"UN";
+  const rawMin=mcCellNum(row[cols.critico]),cantidad_critica=rawMin!==null&&rawMin>=0?rawMin:0;
+  const key=codigo_item?"codigo:"+codigo_item:"nombre:"+mcNormalize(nombre),previous=grouped.get(key);
+  if(previous){
+   if(mcNormalize(previous.nombre)!==mcNormalize(nombre)||previous.unidad!==unidad)throw new Error("El código "+codigo_item+" tiene descripciones o unidades diferentes.");
+   previous.stock+=stock;previous.filas++;continue;
+  }
+  grouped.set(key,{codigo_item,nombre,unidad,stock,cantidad_critica,tipo:mcTipoBodega(nombre),filas:1});
+ }
+ return [...grouped.values()].map(item=>{
+  let matches=item.codigo_item?materiales.filter(m=>m.codigo_item===item.codigo_item):[];
+  if(!matches.length)matches=materiales.filter(m=>mcNormalize(m.nombre)===mcNormalize(item.nombre));
+  if(matches.length>1)throw new Error("Coincidencia ambigua para "+item.nombre);
+  const match=matches[0]||null;return {...item,match,status:match?"Actualizar inventario":"Crear ítem nuevo"};
+ });
+}
 async function previsualizarInventario(){
  const file=$("mcExcel").files?.[0];if(!file)return alert("Seleccione un archivo Excel.");
  if(!window.XLSX)return alert("No se cargó el lector Excel. Recargue la página.");
+ mcImportPreview=[];$("mcConfirmarExcel").disabled=true;$("mcExcelVista").textContent="";
  try{
- const wb=XLSX.read(await file.arrayBuffer(),{type:"array"});mcImportPreview=[];let missing=[];
- for(const sheet of wb.SheetNames){
- const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:""});
- let headers=-1,nameCol=-1,stockCol=-1;
- for(let i=0;i<Math.min(rows.length,25);i++){
- const cells=rows[i].map(mcNormalize);
- const nc=cells.findIndex(x=>/DESCRIPCION|MATERIAL|PRODUCTO|DETALLE|NOMBRE/.test(x));
- const sc=cells.findIndex(x=>/SALDO|STOCKACTUAL|EXISTENCIA|CANTIDADDISPONIBLE|STOCK/.test(x)&&!/CRITIC|MINIM/.test(x));
- if(nc>=0&&sc>=0){headers=i;nameCol=nc;stockCol=sc;break}
- }
- if(headers<0){missing.push(sheet+": sin encabezados reconocibles");continue}
- for(let i=headers+1;i<rows.length;i++){
- const name=String(rows[i][nameCol]??"").trim(),stock=mcCellNum(rows[i][stockCol]);
- if(!name||stock===null||stock<0)continue;
- const matches=materialesCache.filter(m=>mcNormalize(m.nombre)===mcNormalize(name));
- mcImportPreview.push({sheet,row:i+1,name,stock,match:matches.length===1?matches[0]:null,status:matches.length===1?"Coincide":matches.length>1?"Ambiguo":"No registrado"});
- }
- }
- let html='<table><tr><th>Hoja</th><th>Material Excel</th><th>Stock nuevo</th><th>Coincidencia</th></tr>';
- for(const x of mcImportPreview)html+='<tr><td>'+esc(x.sheet)+'</td><td>'+esc(x.name)+'</td><td>'+x.stock+'</td><td>'+esc(x.match?x.match.nombre:x.status)+'</td></tr>';
- $("mcExcelVista").innerHTML=html+'</table>'+(missing.length?'<p>'+esc(missing.join("; "))+'</p>':'');
- $("mcConfirmarExcel").disabled=!mcImportPreview.some(x=>x.match);
- mcEstado("Coincidencias: "+mcImportPreview.filter(x=>x.match).length+". Sin coincidencia: "+mcImportPreview.filter(x=>!x.match).length+". Revise antes de confirmar.");
- }catch(e){mcEstado("Error leyendo Excel: "+e.message)}
+  const wb=XLSX.read(await file.arrayBuffer(),{type:"array"}),all=[];
+  for(const sheet of wb.SheetNames){
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheet],{header:1,defval:""});
+   if(rows.some(row=>row.some(cell=>String(cell).trim())))all.push(...mcLeerBodega(rows,materialesCache).map(x=>({...x,sheet})));
+  }
+  const keys=all.map(x=>x.match?"id:"+x.match.id:x.codigo_item?"codigo:"+x.codigo_item:"nombre:"+mcNormalize(x.nombre));
+  if(new Set(keys).size!==keys.length)throw new Error("Un material aparece en varias hojas. Consolide sus saldos antes de importar.");
+  mcImportPreview=all;
+  let html='<table><tr><th>ITEM</th><th>Descripción</th><th>Unidad</th><th>Saldo</th><th>Acción</th></tr>';
+  for(const x of all)html+='<tr><td>'+esc(x.codigo_item)+'</td><td>'+esc(x.nombre)+'</td><td>'+esc(x.unidad)+'</td><td>'+x.stock+'</td><td>'+esc(x.status)+(x.filas>1?' ('+x.filas+' filas sumadas)':'')+'</td></tr>';
+  $("mcExcelVista").innerHTML=html+'</table>';$("mcConfirmarExcel").disabled=!all.length;
+  mcEstado(all.filter(x=>!x.match).length+" ítems nuevos y "+all.filter(x=>x.match).length+" existentes. Revise los saldos antes de confirmar.");
+ }catch(e){mcImportPreview=[];mcEstado("Error leyendo Excel: "+e.message)}
 }
 let mcGuardando=false;
 async function confirmarInventarioExcel(){
- if(!isAdmin()||mcGuardando)return;
- const good=mcImportPreview.filter(x=>x.match);
- if(new Set(good.map(x=>x.match.id)).size!==good.length)return alert("Un material aparece varias veces en el Excel.");
- if(!good.length)return alert("No hay coincidencias.");
- if(!confirm("Actualizar stock de "+good.length+" materiales y registrar los movimientos? No se modificarán los mínimos críticos."))return;
+ if(!isAdmin()||mcGuardando||!mcImportPreview.length)return;
+ const nuevos=mcImportPreview.filter(x=>!x.match).length;
+ if(!confirm("Crear "+nuevos+" ítems y actualizar el inventario de "+(mcImportPreview.length-nuevos)+" materiales?"))return;
  mcGuardando=true;$("mcConfirmarExcel").disabled=true;
  try{
-  const total=await rpc("ddh_pruebas_ajustar_inventario",{p_items:good.map(x=>({id:x.match.id,stock:x.stock,expected_updated_at:x.match.actualizado_en})),p_tipo:"importacion",p_observacion:"Importación de inventario Excel"});
+  const p_items=mcImportPreview.map(x=>x.match?{id:x.match.id,stock:x.stock,expected_updated_at:x.match.actualizado_en}:{codigo_item:x.codigo_item||null,tipo:x.tipo,nombre:x.nombre,unidad:x.unidad,stock:x.stock,cantidad_critica:x.cantidad_critica});
+  const result=await rpc("importar_materiales_bodega",{p_items});
   mcImportPreview=[];await cargarMateriales();
-  mcEstado("Importación completada: "+total+" materiales modificados con movimiento registrado. Mínimos críticos conservados.");
- }catch(e){mcEstado("No se confirmó la importación: "+e.message+". Actualice y vuelva a revisar el Excel.")}
+  mcEstado("Inventario guardado correctamente: "+result.nuevos+" ítems creados y "+result.actualizados+" saldos actualizados.");
+ }catch(e){mcEstado("No se confirmó la importación: "+e.message+". Actualice y revise nuevamente el Excel.")}
  finally{mcGuardando=false;$("mcConfirmarExcel").disabled=!mcImportPreview.length}
 }
 function mcShowSection(v){if(!isAdmin())return;const names={crear:"Crear",inventario:"Inventario",movimiento:"Movimiento",estado:"Estado"};for(const [key,id] of Object.entries(names))$("mcSec"+id).hidden=key!==v;document.querySelectorAll("#view-materiales .mc-menu button").forEach((b,i)=>b.classList.toggle("selected",Object.keys(names)[i]===v))}
 function pdfMateriales(){if(!isAdmin())return;if(!window.jspdf?.jsPDF)return alert("No se cargó el generador PDF.");const d=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});d.setFontSize(17);d.text("GEOTEC - ESTADO DE MATERIALES CRITICOS",14,18);d.setFontSize(10);d.text("Fecha: "+new Date().toLocaleDateString("es-CL"),14,26);const groups=new Map();for(const m of materialesCache){if(!groups.has(m.tipo))groups.set(m.tipo,[]);groups.get(m.tipo).push(m)}const pct=m=>m.cantidad_critica>0?Math.max(0,(m.cantidad_critica-m.stock)/m.cantidad_critica*100):0;let y=36;for(const [tipo,items] of [...groups.entries()].sort((a,b)=>Math.max(...b[1].map(pct))-Math.max(...a[1].map(pct)))){if(y>180){d.addPage();y=18}d.setFont("helvetica","bold");d.setFontSize(12);d.text(tipo,14,y);y+=8;d.setFont("helvetica","normal");d.setFontSize(9);for(const m of items.sort(mcOrden)){if(y>194){d.addPage();y=18}d.text(d.splitTextToSize(m.nombre,125)[0],14,y);d.text("Critico: "+m.cantidad_critica,153,y);d.text("Stock: "+m.stock,191,y);d.text("Dif.: "+(m.stock-m.cantidad_critica),222,y);d.text("Deficit: "+pct(m).toFixed(1)+"%",252,y);y+=7}y+=5}d.save("MATERIALES_CRITICOS_"+new Date().toISOString().slice(0,10)+".pdf")}
+function mcEditar(id){
+ mcShowSection("inventario");
+ const sel=$("mcSeleccion");sel.value=String(id);sel.onchange();
+ $("mcSecInventario").scrollIntoView({behavior:"smooth",block:"start"});
+ $("mcEditarNombre").focus();
+}
+function mcNombreMaterial(m){return (m.codigo_item?m.codigo_item+" · ":"")+m.nombre}
 let materialesCache=[];
 async function mcRequest(path="",opts={}){
  const r=await fetch(AUTH_PROJECT_URL+"/rest/v1/materiales_criticos"+path,{...opts,headers:{"Authorization":"Bearer "+await validToken(),"apikey":AUTH_PUBLIC_KEY,"Content-Type":"application/json","Accept":"application/json",...(opts.headers||{})}});
@@ -1512,10 +1547,13 @@ async function cargarMateriales(){
  try{
  materialesCache=await mcRequest("?select=*&order=tipo.asc,nombre.asc");
  const sel=$("mcSeleccion");
- const mov=$("mcMovItem");mov.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+m.nombre)+'</option>').join("");
- sel.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+m.nombre)+'</option>').join("");
- sel.onchange=()=>{const m=materialesCache.find(x=>String(x.id)===sel.value);$("mcNuevoStock").value=m?.stock??"";$("mcNuevoCritico").value=m?.cantidad_critica??""};
- const deficit=m=>Number(m.cantidad_critica)>0?Math.max(0,(Number(m.cantidad_critica)-Number(m.stock))/Number(m.cantidad_critica)):0;const groups=new Map();for(const m of materialesCache){if(!groups.has(m.tipo))groups.set(m.tipo,[]);groups.get(m.tipo).push(m)}const ordered=[...groups.entries()].sort((a,b)=>Math.max(...b[1].map(deficit))-Math.max(...a[1].map(deficit))||a[0].localeCompare(b[0],"es"));let html='';for(const [tipo,items] of ordered){items.sort(mcOrden);html+='<div class="mc-group"><div class="mc-group-head"><strong>'+esc(tipo)+'</strong><small>'+items.length+' ítems · '+items.filter(m=>deficit(m)>0).length+' bajo mínimo</small></div><div class="mc-scroll"><table class="mc-table"><thead><tr><th>Elegir</th><th>Material</th><th>Crítico</th><th>Stock</th><th>Diferencia</th><th>Déficit</th><th>Cantidad a pedir</th></tr></thead><tbody>';for(const m of items){const dif=Number(m.stock)-Number(m.cantidad_critica),pct=deficit(m)*100,level=pct>=50?"critical":pct>0?"warning":"ok";html+='<tr><td><input type="checkbox" class="mcCheck" data-id="'+m.id+'"></td><td><strong>'+esc(m.nombre)+'</strong> <small>'+esc(m.unidad)+'</small></td><td>'+m.cantidad_critica+'</td><td>'+m.stock+'</td><td>'+dif+'</td><td><span class="mc-pill '+level+'">'+(pct>0?pct.toFixed(1)+"%":"OK")+'</span></td><td><input class="mcPedido" data-id="'+m.id+'" type="number" min="0.01" step="any" value="'+Math.max(0,-dif)+'"></td></tr>'}html+='</tbody></table></div></div>'}$("mcTabla").innerHTML=html;mcEstado(materialesCache.length+" materiales registrados.");
+ const mov=$("mcMovItem");mov.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+mcNombreMaterial(m))+'</option>').join("");
+ sel.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+mcNombreMaterial(m))+'</option>').join("");
+ sel.onchange=()=>{
+ const m=materialesCache.find(x=>String(x.id)===sel.value);
+ for(const [id,key] of Object.entries({mcEditarCodigo:"codigo_item",mcEditarTipo:"tipo",mcEditarNombre:"nombre",mcEditarUnidad:"unidad",mcNuevoStock:"stock",mcNuevoCritico:"cantidad_critica"}))$(id).value=m?.[key]??"";
+ };
+ const deficit=m=>Number(m.cantidad_critica)>0?Math.max(0,(Number(m.cantidad_critica)-Number(m.stock))/Number(m.cantidad_critica)):0;const groups=new Map();for(const m of materialesCache){if(!groups.has(m.tipo))groups.set(m.tipo,[]);groups.get(m.tipo).push(m)}const ordered=[...groups.entries()].sort((a,b)=>Math.max(...b[1].map(deficit))-Math.max(...a[1].map(deficit))||a[0].localeCompare(b[0],"es"));let html='';for(const [tipo,items] of ordered){items.sort(mcOrden);html+='<div class="mc-group"><div class="mc-group-head"><strong>'+esc(tipo)+'</strong><small>'+items.length+' ítems · '+items.filter(m=>deficit(m)>0).length+' bajo mínimo</small></div><div class="mc-scroll"><table class="mc-table"><thead><tr><th>Elegir</th><th>Material</th><th>Crítico</th><th>Stock</th><th>Diferencia</th><th>Déficit</th><th>Cantidad a pedir</th></tr></thead><tbody>';for(const m of items){const dif=Number(m.stock)-Number(m.cantidad_critica),pct=deficit(m)*100,level=pct>=50?"critical":pct>0?"warning":"ok";html+='<tr><td><input type="checkbox" class="mcCheck" data-id="'+m.id+'"></td><td><strong>'+esc(mcNombreMaterial(m))+'</strong> <small>'+esc(m.unidad)+'</small><button class="btn btn-light" onclick="mcEditar('+m.id+')">Editar</button></td><td>'+m.cantidad_critica+'</td><td>'+m.stock+'</td><td>'+dif+'</td><td><span class="mc-pill '+level+'">'+(pct>0?pct.toFixed(1)+"%":"OK")+'</span></td><td><input class="mcPedido" data-id="'+m.id+'" type="number" min="0.01" step="any" value="'+Math.max(0,-dif)+'"></td></tr>'}html+='</tbody></table></div></div>'}$("mcTabla").innerHTML=html;mcEstado(materialesCache.length+" materiales registrados.");
  }catch(e){mcEstado("Error al consultar materiales: "+e.message)}
 }
 async function crearMaterial(){
@@ -1526,12 +1564,15 @@ async function crearMaterial(){
 }
 async function actualizarMaterial(){
  if(!isAdmin()||mcGuardando)return;
- const id=val("mcSeleccion"),stock=Number(val("mcNuevoStock")),cantidad_critica=Number(val("mcNuevoCritico"));
- const material=materialesCache.find(m=>String(m.id)===id);
- if(!material||val("mcNuevoStock")===""||val("mcNuevoCritico")===""||![stock,cantidad_critica].every(Number.isFinite)||stock<0||cantidad_critica<0)return alert("Seleccione material e ingrese valores válidos.");
+ const id=val("mcSeleccion"),material=materialesCache.find(m=>String(m.id)===id);
+ const tipo=val("mcEditarTipo"),nombre=val("mcEditarNombre"),unidad=val("mcEditarUnidad");
+ const stock=Number(val("mcNuevoStock")),cantidad_critica=Number(val("mcNuevoCritico"));
+ if(!material||!tipo||!nombre||!unidad||val("mcNuevoStock")===""||val("mcNuevoCritico")===""||![stock,cantidad_critica].every(Number.isFinite)||stock<0||cantidad_critica<0)return alert("Seleccione el material y complete tipo, nombre, unidad, stock y mínimo válidos.");
  mcGuardando=true;
- try{await rpc("ddh_pruebas_ajustar_inventario",{p_items:[{id:material.id,stock,cantidad_critica,expected_updated_at:material.actualizado_en}],p_tipo:"ajuste",p_observacion:"Ajuste manual de inventario"});await cargarMateriales();mcEstado("Inventario actualizado y ajuste registrado.")}
- catch(e){mcEstado("No se confirmó el ajuste: "+e.message)}finally{mcGuardando=false}
+ try{
+  await rpc("editar_material_critico",{p_id:material.id,p_codigo_item:val("mcEditarCodigo")||null,p_tipo:tipo,p_nombre:nombre,p_unidad:unidad,p_stock:stock,p_cantidad_critica:cantidad_critica,p_expected_updated_at:material.actualizado_en});
+  await cargarMateriales();mcEstado("Material e inventario actualizados correctamente.");
+ }catch(e){mcEstado("No se confirmó la edición: "+e.message)}finally{mcGuardando=false}
 }
 function solicitarMateriales(){
  if(!isAdmin())return;
