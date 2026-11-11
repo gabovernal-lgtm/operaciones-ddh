@@ -428,8 +428,8 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <div class="actions"><button class="btn btn-blue" onclick="actualizarMaterial()">Guardar cambios</button></div>
 <h3>Importar inventario desde Excel</h3><p class="note">Formato de bodega: ITEM, DESCRIPCION, UN, SALDO y STOCK CRITICO. Permite crear ítems nuevos y actualizar saldos. Los mínimos existentes se conservan; en ítems nuevos puede definirlos después.</p><input type="file" id="mcExcel" accept=".xlsx,.xls"><div class="actions"><button class="btn btn-white" onclick="previsualizarInventario()">Revisar Excel</button><button class="btn btn-blue" id="mcConfirmarExcel" disabled onclick="confirmarInventarioExcel()">Confirmar actualización</button></div><div id="mcExcelVista" style="overflow-x:auto"></div>
 </div><div class="mc-section" id="mcSecMovimiento" hidden><h3>Movimiento de bodega</h3><div class="grid"><label>Material</label><select id="mcMovItem"></select><label>Operación</label><select id="mcMovTipo"><option value="salida">Retirar de bodega</option><option value="entrada">Ingresar unidades</option></select><label>Cantidad</label><input id="mcMovCantidad" type="number" min="0.01" step="any"><label>Observación / destino</label><input id="mcMovObs" placeholder="Ej.: Entregado a equipo 159"></div><div class="actions"><button class="btn btn-blue" onclick="registrarMovimientoMaterial()">Registrar movimiento</button></div>
-</div><div class="mc-section" id="mcSecEstado" hidden><h3>Estado de materiales críticos</h3><div class="actions"><button class="btn btn-blue" onclick="pdfMateriales()">Descargar PDF con fecha</button></div>
-<p class="note">Ordenado por déficit porcentual, de más a menos urgente. Marque los materiales e indique cuánto necesita solicitar.</p>
+</div><div class="mc-section" id="mcSecEstado" hidden><h3>Estado de materiales críticos</h3><div class="actions"><button class="btn btn-blue" onclick="pdfMateriales()">Descargar PDF por tipo y colores</button></div>
+<p class="note">Informe actualizado: una hoja por tipo de material, con colores y porcentaje. Ordenado por déficit porcentual, de más a menos urgente. Marque los materiales e indique cuánto necesita solicitar.</p>
 <div id="mcTabla" style="overflow-x:auto"></div>
 <p class="note">Destinatarios: Configuración de correo → Solicitud de materiales críticos.</p>
 <div class="actions"><button class="btn btn-blue" onclick="solicitarMateriales()">Abrir correo de solicitud</button><button class="btn btn-white" onclick="cargarMateriales()">Actualizar informe</button></div>
@@ -602,7 +602,7 @@ $("proyeccionRows").innerHTML=Array.from({length:20},(_,i)=>`<tr><td class="num"
 $("dFoto").addEventListener("change",function(){if(this.files.length>3){alert("Puede seleccionar un máximo de 3 fotografías.");this.value="";}});
 $("rFotos").addEventListener("change",function(){if(this.files.length>6){alert("Puede seleccionar un máximo de 6 fotografías.");this.value="";}});
 $("fFotos").addEventListener("change",function(){if(this.files.length>6){alert("Puede seleccionar un máximo de 6 fotografías.");this.value="";}});
-if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).then(reg=>reg.update()).catch(()=>{});
 }
 const CORREO_CAMPOS={cPara:"ddh_para",cCC:"ddh_cc",cParaMateriales:"ddh_para_materiales",cCCMateriales:"ddh_cc_materiales",cParaMinuta:"ddh_para_minuta",cCCMinuta:"ddh_cc_minuta",cParaReparacion:"ddh_para_reparacion",cCCReparacion:"ddh_cc_reparacion",cParaCoronas:"ddh_para_coronas",cCCCoronas:"ddh_cc_coronas",cParaFlota:"ddh_para_flota",cCCFlota:"ddh_cc_flota"};
 function correoConfigKey(){return "ddh_pruebas_correo_"+authSession.user.id}
