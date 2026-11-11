@@ -410,7 +410,7 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 
 <section id="view-materiales" class="hidden"><div class="panel">
 <div class="module-head"><h2>Control de Materiales Críticos</h2><button class="btn btn-white" onclick="showView('home')">← Volver</button></div>
-<div class="mc-menu"><button onclick="mcShowSection('crear')">＋ Crear ítem</button><button onclick="mcShowSection('inventario')">▤ Editar / Inventario</button><button onclick="mcShowSection('movimiento')">⇄ Ingreso / salida</button><button onclick="mcShowSection('estado')">◉ Ver estado de materiales</button></div><div class="mc-section" id="mcSecCrear" hidden><h3>Crear ítem y definir stock crítico</h3><div class="grid">
+<div class="mc-menu"><button onclick="mcShowSection('crear')">＋ Crear ítem</button><button onclick="mcShowSection('inventario')">▤ Editar / Inventario</button><button onclick="mcShowSection('movimiento')">⇄ Ingreso / salida</button><button onclick="mcShowSection('estado')">◉ Ver estado de materiales</button><button onclick="mcShowSection('historial')">Historial de cambios</button></div><div class="mc-section" id="mcSecCrear" hidden><h3>Crear ítem y definir stock crítico</h3><div class="grid">
 <label>Tipo</label><select id="mcTipo"><option>Brocas</option><option>Barras</option><option>Sensores</option><option>Centralizadores</option><option>Otros</option></select>
 <label>Nombre</label><input id="mcNombre" placeholder="Ej.: Broca HQ">
 <label>Unidad</label><input id="mcUnidad" value="unidades">
@@ -433,6 +433,13 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <div id="mcTabla" style="overflow-x:auto"></div>
 <p class="note">Destinatarios: Configuración de correo → Solicitud de materiales críticos.</p>
 <div class="actions"><button class="btn btn-blue" onclick="solicitarMateriales()">Abrir correo de solicitud</button><button class="btn btn-white" onclick="cargarMateriales()">Actualizar informe</button></div>
+</div><div class="mc-section" id="mcSecHistorial" hidden>
+<h3>Historial de cambios de materiales</h3>
+<div class="grid"><label for="mcHistorialMaterial">Material</label><select id="mcHistorialMaterial" onchange="mcCargarHistorial()"><option value="">Todos los materiales</option></select></div>
+<div class="actions"><button class="btn btn-white" onclick="mcCargarHistorial()">Actualizar historial</button></div>
+<p id="mcHistorialMensaje" class="note" role="status"></p>
+<div id="mcHistorialTabla" style="overflow-x:auto"></div>
+<div class="actions"><button id="mcHistorialAnterior" class="btn btn-white" disabled onclick="mcCargarHistorial(mcHistorialOffset-100)">Anterior</button><button id="mcHistorialSiguiente" class="btn btn-white" disabled onclick="mcCargarHistorial(mcHistorialOffset+100)">Siguiente</button></div>
 </div><div id="mcEstado" class="note"></div></div></section>
 <section id="view-horas" class="hidden">
 <div class="panel">
@@ -1524,7 +1531,40 @@ async function confirmarInventarioExcel(){
  }catch(e){mcEstado("No se confirmó la importación: "+e.message+". Actualice y revise nuevamente el Excel.")}
  finally{mcGuardando=false;$("mcConfirmarExcel").disabled=!mcImportPreview.length}
 }
-function mcShowSection(v){if(!isAdmin())return;const names={crear:"Crear",inventario:"Inventario",movimiento:"Movimiento",estado:"Estado"};for(const [key,id] of Object.entries(names))$("mcSec"+id).hidden=key!==v;document.querySelectorAll("#view-materiales .mc-menu button").forEach((b,i)=>b.classList.toggle("selected",Object.keys(names)[i]===v))}
+let mcHistorialOffset=0,mcHistorialConsulta=0;
+function mcCambiosRegistro(r){
+ const cambios=[];
+ if(Number(r.stock_anterior)!==Number(r.stock_nuevo))cambios.push({campo:"Stock",antes:r.stock_anterior,despues:r.stock_nuevo});
+ const texto=r.observacion||"",marca=" | Después: ",inicio="Edición de material | Antes: ",corte=texto.indexOf(marca);
+ if(texto.startsWith(inicio)&&corte>=0){
+  try{
+   const antes=JSON.parse(texto.slice(inicio.length,corte)),despues=JSON.parse(texto.slice(corte+marca.length));
+   const labels={codigo_item:"Código ITEM",tipo:"Tipo",nombre:"Descripción",unidad:"Unidad",cantidad_critica:"Cantidad crítica"};
+   for(const [key,label] of Object.entries(labels))if(antes[key]!==despues[key])cambios.push({campo:label,antes:antes[key]??"—",despues:despues[key]??"—"});
+  }catch(e){cambios.push({campo:"Detalle",antes:"—",despues:texto})}
+ }else{
+  const minimo=texto.match(/Mínimo:\s*([\d.,]+)\s*→\s*([\d.,]+)/);
+  if(minimo&&minimo[1]!==minimo[2])cambios.push({campo:"Cantidad crítica",antes:minimo[1],despues:minimo[2]});
+ }
+ return cambios.length?cambios:[{campo:r.tipo==="importacion"?"Importación":"Registro de ajuste",antes:"—",despues:"Sin variación de stock"}];
+}
+async function mcCargarHistorial(offset=0){
+ if(!isAdmin())return;
+ const owner=authSession?.user?.id,consulta=++mcHistorialConsulta;
+ const mensaje=$("mcHistorialMensaje"),tabla=$("mcHistorialTabla");
+ const anterior=$("mcHistorialAnterior"),siguiente=$("mcHistorialSiguiente");
+ anterior.disabled=siguiente.disabled=true;tabla.textContent="";mensaje.textContent="Consultando historial…";
+ try{
+  const rows=await rpc("historial_materiales",{p_material_id:val("mcHistorialMaterial")||null,p_offset:offset});
+  if(consulta!==mcHistorialConsulta||authSession?.user?.id!==owner||!isAdmin())return;
+  mcHistorialOffset=offset;
+  const fecha=x=>new Intl.DateTimeFormat("es-CL",{timeZone:"America/Santiago",dateStyle:"short",timeStyle:"short"}).format(new Date(x));
+  tabla.innerHTML='<table class="mc-table"><thead><tr><th>Fecha y hora</th><th>Material</th><th>Cambio</th><th>Antes</th><th>Después</th><th>Realizado por</th></tr></thead><tbody>'+rows.flatMap(r=>mcCambiosRegistro(r).map(c=>'<tr><td>'+esc(fecha(r.fecha))+'</td><td>'+esc(mcNombreMaterial(r))+'</td><td>'+esc(c.campo)+'</td><td style="overflow-wrap:anywhere">'+esc(String(c.antes))+'</td><td style="overflow-wrap:anywhere">'+esc(String(c.despues))+'</td><td>'+esc(r.usuario_email||r.usuario)+'</td></tr>')).join("")+'</tbody></table>';
+  mensaje.textContent=rows.length?"Movimientos "+(offset+1)+" a "+(offset+rows.length)+". Hora de Chile.":"No hay cambios para este material.";
+  anterior.disabled=offset===0;siguiente.disabled=rows.length<100;
+ }catch(e){if(consulta===mcHistorialConsulta)mensaje.textContent="No se pudo consultar el historial: "+e.message}
+}
+function mcShowSection(v){if(!isAdmin())return;const names={crear:"Crear",inventario:"Inventario",movimiento:"Movimiento",estado:"Estado",historial:"Historial"};for(const [key,id] of Object.entries(names))$("mcSec"+id).hidden=key!==v;document.querySelectorAll("#view-materiales .mc-menu button").forEach((b,i)=>b.classList.toggle("selected",Object.keys(names)[i]===v));if(v==="historial")mcCargarHistorial()}
 function pdfMateriales(){
  if(!isAdmin())return;
  if(!window.jspdf?.jsPDF)return alert("No se cargó el generador PDF.");
@@ -1614,6 +1654,9 @@ async function cargarMateriales(){
  const sel=$("mcSeleccion");
  const mov=$("mcMovItem");mov.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+mcNombreMaterial(m))+'</option>').join("");
  sel.innerHTML='<option value="">Seleccione material</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(m.tipo+" / "+mcNombreMaterial(m))+'</option>').join("");
+ const historial=$("mcHistorialMaterial"),filtro=historial.value;
+ historial.innerHTML='<option value="">Todos los materiales</option>'+materialesCache.map(m=>'<option value="'+m.id+'">'+esc(mcNombreMaterial(m))+'</option>').join("");
+ historial.value=materialesCache.some(m=>String(m.id)===filtro)?filtro:"";
  sel.onchange=()=>{
  const m=materialesCache.find(x=>String(x.id)===sel.value);
  for(const [id,key] of Object.entries({mcEditarCodigo:"codigo_item",mcEditarTipo:"tipo",mcEditarNombre:"nombre",mcEditarUnidad:"unidad",mcNuevoStock:"stock",mcNuevoCritico:"cantidad_critica"}))$(id).value=m?.[key]??"";
@@ -1633,6 +1676,7 @@ async function actualizarMaterial(){
  const tipo=val("mcEditarTipo"),nombre=val("mcEditarNombre"),unidad=val("mcEditarUnidad");
  const stock=Number(val("mcNuevoStock")),cantidad_critica=Number(val("mcNuevoCritico"));
  if(!material||!tipo||!nombre||!unidad||val("mcNuevoStock")===""||val("mcNuevoCritico")===""||![stock,cantidad_critica].every(Number.isFinite)||stock<0||cantidad_critica<0)return alert("Seleccione el material y complete tipo, nombre, unidad, stock y mínimo válidos.");
+ if(Number(material.cantidad_critica)!==cantidad_critica&&!confirm("¿Está seguro de cambiar la cantidad crítica de "+material.cantidad_critica+" a "+cantidad_critica+"?\n\nMaterial: "+material.nombre))return;
  mcGuardando=true;
  try{
   await rpc("editar_material_critico",{p_id:material.id,p_codigo_item:val("mcEditarCodigo")||null,p_tipo:tipo,p_nombre:nombre,p_unidad:unidad,p_stock:stock,p_cantidad_critica:cantidad_critica,p_expected_updated_at:material.actualizado_en});
