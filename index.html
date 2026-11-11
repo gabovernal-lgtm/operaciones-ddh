@@ -1525,7 +1525,72 @@ async function confirmarInventarioExcel(){
  finally{mcGuardando=false;$("mcConfirmarExcel").disabled=!mcImportPreview.length}
 }
 function mcShowSection(v){if(!isAdmin())return;const names={crear:"Crear",inventario:"Inventario",movimiento:"Movimiento",estado:"Estado"};for(const [key,id] of Object.entries(names))$("mcSec"+id).hidden=key!==v;document.querySelectorAll("#view-materiales .mc-menu button").forEach((b,i)=>b.classList.toggle("selected",Object.keys(names)[i]===v))}
-function pdfMateriales(){if(!isAdmin())return;if(!window.jspdf?.jsPDF)return alert("No se cargó el generador PDF.");const d=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});d.setFontSize(17);d.text("GEOTEC - ESTADO DE MATERIALES CRITICOS",14,18);d.setFontSize(10);d.text("Fecha: "+new Date().toLocaleDateString("es-CL"),14,26);const groups=new Map();for(const m of materialesCache){if(!groups.has(m.tipo))groups.set(m.tipo,[]);groups.get(m.tipo).push(m)}const pct=m=>m.cantidad_critica>0?Math.max(0,(m.cantidad_critica-m.stock)/m.cantidad_critica*100):0;let y=36;for(const [tipo,items] of [...groups.entries()].sort((a,b)=>Math.max(...b[1].map(pct))-Math.max(...a[1].map(pct)))){if(y>180){d.addPage();y=18}d.setFont("helvetica","bold");d.setFontSize(12);d.text(tipo,14,y);y+=8;d.setFont("helvetica","normal");d.setFontSize(9);for(const m of items.sort(mcOrden)){if(y>194){d.addPage();y=18}d.text(d.splitTextToSize(m.nombre,125)[0],14,y);d.text("Critico: "+m.cantidad_critica,153,y);d.text("Stock: "+m.stock,191,y);d.text("Dif.: "+(m.stock-m.cantidad_critica),222,y);d.text("Deficit: "+pct(m).toFixed(1)+"%",252,y);y+=7}y+=5}d.save("MATERIALES_CRITICOS_"+new Date().toISOString().slice(0,10)+".pdf")}
+function pdfMateriales(){
+ if(!isAdmin())return;
+ if(!window.jspdf?.jsPDF)return alert("No se cargó el generador PDF.");
+ if(!materialesCache.length)return alert("No hay materiales para generar el informe.");
+ const d=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+ if(typeof d.autoTable!=="function")return alert("No se cargó el generador de tablas. Recargue e intente nuevamente.");
+ const fecha=new Intl.DateTimeFormat("es-CL",{timeZone:"America/Santiago",dateStyle:"short",timeStyle:"short"}).format(new Date());
+ const numero=n=>Number(n).toLocaleString("es-CL",{maximumFractionDigits:2});
+ const deficit=m=>Number(m.cantidad_critica)>0?Math.max(0,(Number(m.cantidad_critica)-Number(m.stock))/Number(m.cantidad_critica)*100):null;
+ const color=m=>{
+  const pct=deficit(m);
+  if(pct===null)return {fondo:[240,242,245],fuerte:[214,219,226],texto:[64,73,87]};
+  if(pct>=50)return {fondo:[253,231,232],fuerte:[185,41,53],texto:[255,255,255]};
+  if(pct>0)return {fondo:[255,246,216],fuerte:[247,202,74],texto:[85,62,6]};
+  return {fondo:[230,243,233],fuerte:[40,122,76],texto:[255,255,255]};
+ };
+ const groups=new Map();
+ for(const m of materialesCache){if(!groups.has(m.tipo))groups.set(m.tipo,[]);groups.get(m.tipo).push(m)}
+ const prioridad=items=>Math.max(...items.map(m=>deficit(m)??0));
+ const orden=[...groups.entries()].sort((a,b)=>prioridad(b[1])-prioridad(a[1])||a[0].localeCompare(b[0],"es"));
+ orden.forEach(([tipo,items],index)=>{
+  if(index)d.addPage();
+  items=[...items].sort(mcOrden);
+  const header=()=>{
+   d.setFillColor(18,60,105);d.rect(0,0,297,23,"F");
+   d.setFont("helvetica","bold");d.setFontSize(15);d.setTextColor(255,255,255);
+   d.text("GEOTEC | ESTADO DE MATERIALES CRITICOS",14,14);
+   d.setFillColor(239,198,64);d.rect(0,23,297,1.5,"F");
+   d.setTextColor(18,60,105);d.setFontSize(14);d.text(tipo,14,34);
+   d.setFont("helvetica","normal");d.setFontSize(8.5);d.setTextColor(75,85,99);
+   d.text(items.length+" materiales | Fecha: "+fecha,283,34,{align:"right"});
+   const leyenda=[
+    {x:14,rgb:[185,41,53],label:"Rojo: déficit de 50% a 100%"},
+    {x:86,rgb:[247,202,74],label:"Amarillo: déficit mayor a 0% y menor a 50%"},
+    {x:187,rgb:[40,122,76],label:"Verde: mínimo cubierto"},
+    {x:246,rgb:[214,219,226],label:"Sin mínimo"}
+   ];
+   d.setFontSize(7);
+   for(const v of leyenda){d.setFillColor(...v.rgb);d.rect(v.x,40,3,3,"F");d.text(v.label,v.x+5,42.5)}
+   d.setFontSize(8);d.text("Déficit = faltante / mínimo crítico x 100. Diferencia = stock - mínimo. Sin mínimo definido: N/D.",14,49);
+   d.setDrawColor(211,219,228);d.line(14,198,283,198);
+   d.setFontSize(8);d.text("OPERACIONES DDH",14,203);
+   d.text("Página "+d.internal.getCurrentPageInfo().pageNumber,283,203,{align:"right"});
+  };
+  d.autoTable({
+   startY:54,margin:{left:14,right:14,top:54,bottom:16},
+   theme:"grid",showHead:"everyPage",rowPageBreak:"avoid",
+   head:[["Código ITEM","Material / descripción","UN","Mínimo crítico","Stock","Diferencia","Déficit %"]],
+   body:items.map(m=>{
+    const pct=deficit(m),definido=pct!==null;
+    return [m.codigo_item||"—",m.nombre,m.unidad,definido?numero(m.cantidad_critica):"Sin definir",numero(m.stock),definido?numero(Number(m.stock)-Number(m.cantidad_critica)):"N/D",definido?pct.toFixed(1).replace(".",",")+"%":"N/D"];
+   }),
+   styles:{font:"helvetica",fontSize:9,cellPadding:1,overflow:"linebreak",valign:"middle",lineColor:[218,225,232],lineWidth:0.15,textColor:[38,48,63]},
+   headStyles:{fillColor:[18,60,105],textColor:[255,255,255],fontStyle:"bold",fontSize:8.5},
+   columnStyles:{0:{cellWidth:33,fontSize:8},1:{cellWidth:100},2:{cellWidth:12,halign:"center"},3:{cellWidth:26,halign:"right"},4:{cellWidth:24,halign:"right"},5:{cellWidth:25,halign:"right"},6:{cellWidth:49,halign:"center",fontStyle:"bold"}},
+   didParseCell:data=>{
+    if(data.section!=="body")return;
+    const c=color(items[data.row.index]);data.cell.styles.fillColor=c.fondo;
+    if(data.column.index===6){data.cell.styles.fillColor=c.fuerte;data.cell.styles.textColor=c.texto}
+   },
+   didDrawPage:header
+  });
+ });
+ const fechaArchivo=new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Santiago"}).format(new Date());
+ d.save("MATERIALES_CRITICOS_"+fechaArchivo+".pdf");
+}
 function mcEditar(id){
  mcShowSection("inventario");
  const sel=$("mcSeleccion");sel.value=String(id);sel.onchange();
