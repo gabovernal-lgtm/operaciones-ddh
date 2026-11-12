@@ -207,7 +207,7 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 </style>
 </head>
 <body>
-<section id="authScreen"><div class="auth-card"><h2>OPERACIONES DDH</h2><p>Acceso de personal Geotec autorizado</p>
+<section id="authScreen"><div class="auth-card"><h2>OPERACIONES DDH</h2><p>Acceso de personal Geotec autorizado · Versión oficial</p>
 <form id="authForm"><input id="authEmail" type="email" placeholder="Correo @geotec.cl" autocomplete="username" required><input id="authPassword" type="password" placeholder="Contraseña" autocomplete="current-password" minlength="10" required>
 <button type="submit">Ingresar</button><button type="button" class="secondary" id="signupBtn">Crear cuenta</button><button type="button" class="secondary" id="recoverBtn">Recuperar contraseña</button></form>
 <div id="resetBox" hidden><p>Establecer contraseña nueva</p><input id="newPassword" type="password" minlength="10" placeholder="Nueva contraseña (mín. 10 caracteres)"><button id="resetBtn" type="button">Guardar contraseña</button></div>
@@ -215,7 +215,7 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <div id="appShell" hidden>
 <div id="authTopbar" style="background:#092b50;color:white;padding:8px 18px;display:flex;gap:12px;justify-content:flex-end;align-items:center;flex-wrap:wrap"><span id="sessionEmail"></span><button class="btn btn-white" id="adminToggle" hidden>Administrar usuarios</button><button class="btn btn-white" id="logoutBtn">Cerrar sesión</button></div>
 <section id="adminPanel" hidden><h2>Administración de usuarios</h2><p>Aprueba o desactiva las cuentas registradas. La aprobación no sustituye la verificación del correo.</p><div id="adminMessage" role="status"></div><div style="overflow-x:auto"><table><thead><tr><th>Correo</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="adminRows"></tbody></table></div></section>
-<header class="header"><div class="brand-bar"><div class="brand-logo"><img id="appLogoGeotec" alt="Geotec S.A."></div><div class="brand-center"><h1>OPERACIONES DDH</h1><p>PLANIFICACIÓN · CONTROL · RESULTADOS</p></div><div class="brand-logo"><img id="appLogoCollahuasi" alt="Collahuasi"></div><div class="header-shortcuts"><button type="button" onclick="showView('historial')" aria-label="Abrir historial">◷ <span>Historial</span></button><button type="button" onclick="showView('config')" aria-label="Configurar correos">⚙ <span>Configuración de correo</span></button></div></div><div class="brand-accent"></div></header>
+<header class="header"><div class="brand-bar"><div class="brand-logo"><img id="appLogoGeotec" alt="Geotec S.A."></div><div class="brand-center"><h1>OPERACIONES DDH</h1><p>OFICIAL · PLANIFICACIÓN · CONTROL · RESULTADOS</p></div><div class="brand-logo"><img id="appLogoCollahuasi" alt="Collahuasi"></div><div class="header-shortcuts"><button type="button" onclick="actualizarAppDDH(this)" aria-label="Actualizar aplicación oficial">↻ <span>Actualizar app</span></button><button type="button" onclick="showView('historial')" aria-label="Abrir historial">◷ <span>Historial</span></button><button type="button" onclick="showView('config')" aria-label="Configurar correos">⚙ <span>Configuración de correo</span></button></div></div><div class="brand-accent"></div></header>
 <nav class="nav hidden" aria-hidden="true">
 <button id="nav-traslado" onclick="showView('traslado')">Nuevo traslado</button>
 <button id="nav-srm" onclick="showView('srm')">Nuevo SRM</button>
@@ -1565,6 +1565,23 @@ async function mcCargarHistorial(offset=0){
  }catch(e){if(consulta===mcHistorialConsulta)mensaje.textContent="No se pudo consultar el historial: "+e.message}
 }
 function mcShowSection(v){if(!isAdmin())return;const names={crear:"Crear",inventario:"Inventario",movimiento:"Movimiento",estado:"Estado",historial:"Historial"};for(const [key,id] of Object.entries(names))$("mcSec"+id).hidden=key!==v;document.querySelectorAll("#view-materiales .mc-menu button").forEach((b,i)=>b.classList.toggle("selected",Object.keys(names)[i]===v));if(v==="historial")mcCargarHistorial()}
+async function actualizarAppDDH(button){
+ if(button.disabled)return;
+ button.disabled=true;
+ const previous=button.innerHTML;button.textContent="Actualizando…";
+ try{
+  const url=new URL(window.location.href);url.searchParams.set("version","oficial-"+Date.now());
+  const response=await fetch(url.href,{cache:"no-store"});
+  if(!response.ok)throw new Error("No se pudo descargar la actualización.");
+  const html=await response.text();
+  if(!html.includes("Descargar PDF por tipo y colores"))throw new Error("La actualización aún no está disponible. Intente nuevamente.");
+  if("serviceWorker" in navigator){
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(registration)await registration.update().catch(()=>{});
+  }
+  window.location.replace(url.href);
+ }catch(e){alert(e.message+" Revise su conexión.");button.disabled=false;button.innerHTML=previous}
+}
 function pdfMateriales(){
  if(!isAdmin())return;
  if(!window.jspdf?.jsPDF)return alert("No se cargó el generador PDF.");
@@ -1629,7 +1646,7 @@ function pdfMateriales(){
   });
  });
  const fechaArchivo=new Intl.DateTimeFormat("sv-SE",{timeZone:"America/Santiago"}).format(new Date());
- d.save("MATERIALES_CRITICOS_"+fechaArchivo+".pdf");
+ d.save("MATERIALES_CRITICOS_COLORES_"+fechaArchivo+".pdf");
 }
 function mcEditar(id){
  mcShowSection("inventario");
