@@ -428,7 +428,7 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <div class="actions"><button class="btn btn-blue" onclick="actualizarMaterial()">Guardar cambios</button></div>
 <h3>Importar inventario desde Excel</h3><p class="note">Formato de bodega: ITEM, DESCRIPCION, UN, SALDO y STOCK CRITICO. Permite crear ítems nuevos y actualizar saldos. Los mínimos existentes se conservan; en ítems nuevos puede definirlos después.</p><input type="file" id="mcExcel" accept=".xlsx,.xls"><div class="actions"><button class="btn btn-white" onclick="previsualizarInventario()">Revisar Excel</button><button class="btn btn-blue" id="mcConfirmarExcel" disabled onclick="confirmarInventarioExcel()">Confirmar actualización</button></div><div id="mcExcelVista" style="overflow-x:auto"></div>
 </div><div class="mc-section" id="mcSecMovimiento" hidden><h3>Movimiento de bodega</h3><div class="grid"><label>Material</label><select id="mcMovItem"></select><label>Operación</label><select id="mcMovTipo"><option value="salida">Retirar de bodega</option><option value="entrada">Ingresar unidades</option></select><label>Cantidad</label><input id="mcMovCantidad" type="number" min="0.01" step="any"><label>Observación / destino</label><input id="mcMovObs" placeholder="Ej.: Entregado a equipo 159"></div><div class="actions"><button class="btn btn-blue" onclick="registrarMovimientoMaterial()">Registrar movimiento</button></div>
-</div><div class="mc-section" id="mcSecEstado" hidden><h3>Estado de materiales críticos</h3><div class="actions"><button class="btn btn-blue" onclick="pdfMateriales()">Descargar PDF por tipo y colores</button></div>
+</div><div class="mc-section" id="mcSecEstado" hidden><h3>Estado de materiales críticos</h3><div class="actions"><button class="btn btn-blue" onclick="pdfMateriales()">Generar informe</button></div>
 <p class="note">Informe actualizado: una hoja por tipo de material, con colores y porcentaje. Ordenado por déficit porcentual, de más a menos urgente. Marque los materiales e indique cuánto necesita solicitar.</p>
 <div id="mcTabla" style="overflow-x:auto"></div>
 <p class="note">Destinatarios: Configuración de correo → Solicitud de materiales críticos.</p>
@@ -1574,7 +1574,7 @@ async function actualizarAppDDH(button){
   const response=await fetch(url.href,{cache:"no-store"});
   if(!response.ok)throw new Error("No se pudo descargar la actualización.");
   const html=await response.text();
-  if(!html.includes("Descargar PDF por tipo y colores"))throw new Error("La actualización aún no está disponible. Intente nuevamente.");
+  if(!html.includes("MATERIALES_CRITICOS_COLORES_"))throw new Error("La actualización aún no está disponible. Intente nuevamente.");
   if("serviceWorker" in navigator){
    const registration=await navigator.serviceWorker.getRegistration();
    if(registration)await registration.update().catch(()=>{});
