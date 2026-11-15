@@ -113,6 +113,7 @@ body{background:linear-gradient(#fff,#f6faff)!important}
 @media(prefers-reduced-motion:reduce){.home-card{transition:none!important}}
 .hd-filtros{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.hd-filtros label,.ah-grid label{display:block;font-weight:600;margin-bottom:6px}.hd-filtros input,.hd-filtros select,.ah-grid input,.ah-grid textarea,.ah-grid select{border:1px solid #b9cbe0;border-radius:6px;padding:9px;font:14px "Segoe UI",Arial;max-width:100%}.hd-resumen{display:flex;gap:14px;flex-wrap:wrap;margin:16px 0}.hd-resumen>div{border:1px solid #cad7e3;padding:14px 20px;border-radius:10px;min-width:240px}.hd-resumen strong{display:block;font-size:24px}.hd-resumen span{display:block;margin-top:5px}.hd-cobrar{background:#fce4e4!important;color:#9c1919!important}.hd-pendiente{background:#fff2b2!important;color:#705100!important}.hd-totales{border-collapse:collapse;min-width:440px;margin-bottom:18px}.hd-totales caption{text-align:left;font-weight:700;margin-bottom:8px}.hd-totales td,.hd-totales th{padding:9px 15px;border-bottom:1px solid #d8e3ed;text-align:right}.hd-totales td:first-child,.hd-totales th:first-child{text-align:left}#view-horas .history-table{table-layout:auto;min-width:1150px}#view-horas .history-table th:nth-child(7){min-width:230px}#ahDialog{width:min(850px,94vw);max-height:90vh;border:1px solid #cad7e3;border-radius:14px;padding:24px;color:#172033}#ahDialog::backdrop{background:#071b36aa}.ah-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.ah-grid textarea,.ah-grid select{width:100%}#ahDialog details{margin-top:20px}#ahDialog summary{cursor:pointer;font-weight:700;margin-bottom:14px}#ahMensaje{color:#9c1919}@media(max-width:650px){.ah-grid{grid-template-columns:1fr}.hd-filtros>div{width:100%}.hd-filtros select,.hd-filtros input{width:100%}.hd-resumen>div{width:100%;min-width:0}}
 .pd-bloques{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}.pd-bloques label{display:block;font-weight:700;color:#153f6d}.pd-bloques textarea{display:block;width:100%;margin-top:9px;min-height:125px;font-weight:400;line-height:1.5;resize:vertical}.pd-bloques .pd-criticas{color:#a82d36}.pd-criticas textarea{border-color:#dca8ad;background:#fff8f8}@media(max-width:760px){.pd-bloques{grid-template-columns:1fr;gap:18px}}
+.pd-dictar{margin-top:8px;font-size:13px}.pd-dictar[aria-pressed=true]{background:#b52f3e!important;color:white!important;border-color:#b52f3e!important}#pdVozEstado{color:#153f6d;font-weight:600}#pdVozAyuda{font-size:13px;color:#657483}
 </style>
 <script src="./config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
@@ -417,13 +418,13 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <p>Escribe o pega los datos en cada bloque. Deja vacío lo que no corresponda.</p>
 <div class="grid"><label for="pdFecha">Fecha</label><input id="pdFecha" type="date" required onchange="pdCambiarDia()"><label for="pdTurno">Turno</label><select id="pdTurno" onchange="pdCambiarDia()"><option>A</option><option>B</option></select></div>
 <form id="pdForm" onsubmit="pdGenerarInforme(event)" oninput="pdOcultarInforme()">
-<div class="pd-bloques">
-<label for="pdAgua">Agua y limpieza<textarea id="pdAgua" maxlength="12000" rows="4" placeholder="83: 0%, primera prioridad&#10;160: 25%&#10;Limpieza de planta 161"></textarea></label>
-<label for="pdPetroleo">Petróleo<textarea id="pdPetroleo" maxlength="12000" rows="4" placeholder="Al pedido. Ideal rellenar los equipos durante el día."></textarea></label>
-<label for="pdMantencion">Mantención<textarea id="pdMantencion" maxlength="12000" rows="4" placeholder="120: mantenimiento preventivo&#10;142: fuga en acople rápido de mesa sacatestigo"></textarea></label>
-<label for="pdMuestras">Muestras<textarea id="pdMuestras" maxlength="12000" rows="4" placeholder="83: segundo pallet&#10;159: fin de pozo"></textarea></label>
-<label for="pdTrabajos">Trabajos por supervisor<textarea id="pdTrabajos" maxlength="12000" rows="5" placeholder="Miguel Araya: traslado e instalación de 162&#10;Jorge Lazo: instalación de 144"></textarea></label>
-<label for="pdCriticas" class="pd-criticas">Actividades críticas y controles<textarea id="pdCriticas" maxlength="12000" rows="5" placeholder="Traslado de 162: validar ruta, segregar el área y mantener supervisión durante la maniobra."></textarea></label>
+<p id="pdVozAyuda"></p><p id="pdVozEstado" role="status" aria-live="polite"></p><div class="pd-bloques">
+<div class="pd-bloque"><label for="pdAgua">Agua y limpieza<textarea id="pdAgua" maxlength="12000" rows="4" placeholder="83: 0%, primera prioridad&#10;160: 25%&#10;Limpieza de planta 161"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdAgua" aria-pressed="false" aria-label="Dictar agua y limpieza" onclick="pdDictar('pdAgua')">🎙 Dictar</button></div>
+<div class="pd-bloque"><label for="pdPetroleo">Petróleo<textarea id="pdPetroleo" maxlength="12000" rows="4" placeholder="Al pedido. Ideal rellenar los equipos durante el día."></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdPetroleo" aria-pressed="false" aria-label="Dictar petróleo" onclick="pdDictar('pdPetroleo')">🎙 Dictar</button></div>
+<div class="pd-bloque"><label for="pdMantencion">Mantención<textarea id="pdMantencion" maxlength="12000" rows="4" placeholder="120: mantenimiento preventivo&#10;142: fuga en acople rápido de mesa sacatestigo"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdMantencion" aria-pressed="false" aria-label="Dictar mantención" onclick="pdDictar('pdMantencion')">🎙 Dictar</button></div>
+<div class="pd-bloque"><label for="pdMuestras">Muestras<textarea id="pdMuestras" maxlength="12000" rows="4" placeholder="83: segundo pallet&#10;159: fin de pozo"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdMuestras" aria-pressed="false" aria-label="Dictar muestras" onclick="pdDictar('pdMuestras')">🎙 Dictar</button></div>
+<div class="pd-bloque"><label for="pdTrabajos">Trabajos por supervisor<textarea id="pdTrabajos" maxlength="12000" rows="5" placeholder="Miguel Araya: traslado e instalación de 162&#10;Jorge Lazo: instalación de 144"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdTrabajos" aria-pressed="false" aria-label="Dictar trabajos por supervisor" onclick="pdDictar('pdTrabajos')">🎙 Dictar</button></div>
+<div class="pd-bloque"><label for="pdCriticas" class="pd-criticas">Actividades críticas y controles<textarea id="pdCriticas" maxlength="12000" rows="5" placeholder="Traslado de 162: validar ruta, segregar el área y mantener supervisión durante la maniobra."></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdCriticas" aria-pressed="false" aria-label="Dictar actividades críticas y controles" onclick="pdDictar('pdCriticas')">🎙 Dictar</button></div>
 </div>
 <div class="actions"><button id="pdGenerar" class="btn btn-light" type="submit" disabled>Generar planificación</button></div>
 </form>
@@ -596,6 +597,7 @@ const EQUIPOS_CRONOS=["CH1-83", "CH1-133", "CH1-135", "CH1-140", "CH1-141", "CH1
 function isAdmin(){return authProfile?.role==='admin'&&authProfile?.status==='approved'}
 function applyAdminVisibility(){document.querySelectorAll('[data-admin-only]').forEach(e=>e.hidden=!isAdmin());pdVisibilidad()}
 function showView(v){
+if(v!=='planificacion')pdVozDetener(true);
 if(v==='planificacion'&&!pdPermitido()){alert('Acceso exclusivo de Gabriel.');return}
 if(['minuta','proyeccion','materiales','horas'].includes(v)&&!isAdmin()){alert('Acceso exclusivo para administradores');return}
 
@@ -2105,14 +2107,15 @@ function pdOcultarInforme(){$('pdInforme').hidden=true;$('pdTexto').value='';$('
 function pdVisibilidad(){
  document.querySelectorAll('[data-plan-personal]').forEach(e=>e.hidden=!pdPermitido());
  if(!pdPermitido()){
+  pdVozDetener(true);
   const abierta=!$('view-planificacion').classList.contains('hidden');pdCarga++;pdListo=false;pdBusy=false;pdVersion=null;pdDia='';pdTurnoActual='';pdBase='';
   $('pdForm').reset();$('pdFecha').value='';$('pdMensaje').textContent='';pdOcultarInforme();$('view-planificacion').classList.add('hidden');if(abierta)showView('home');
  }
 }
 function pdFechaHoy(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day}
-function pdAbrir(){if(!pdPermitido())return;if(!$('pdFecha').value)$('pdFecha').value=pdFechaHoy();if(!pdListo)pdCargar()}
+function pdAbrir(){if(!pdPermitido())return;pdVozPreparar();if(!$('pdFecha').value)$('pdFecha').value=pdFechaHoy();if(!pdListo)pdCargar()}
 function pdMensaje(t){$('pdMensaje').textContent=t}
-function pdBloqueo(on){pdBusy=on;document.querySelectorAll('#pdForm textarea,#pdForm button').forEach(e=>e.disabled=on);$('pdFecha').disabled=on;$('pdTurno').disabled=on;$('pdGenerar').disabled=on||!pdListo}
+function pdBloqueo(on){pdBusy=on;document.querySelectorAll('#pdForm textarea,#pdForm button').forEach(e=>e.disabled=on);$('pdFecha').disabled=on;$('pdTurno').disabled=on;$('pdGenerar').disabled=on||!pdListo;pdVozPintar()}
 async function pdRequest(table,query='',opts={}){
  if(!pdPermitido())throw Error('Acceso exclusivo de Gabriel.');
  const r=await fetch(AUTH_PROJECT_URL+'/rest/v1/'+table+query,{...opts,cache:'no-store',headers:{...authHeaders(),Authorization:'Bearer '+await validToken(),Prefer:'return=representation',...(opts.headers||{})}});
@@ -2154,7 +2157,7 @@ function pdTextoInforme(datos,fecha,turno){
  return lines.join('\n');
 }
 async function pdGenerarInforme(ev){
- ev?.preventDefault();if(!pdPermitido()||!pdListo||pdBusy||!$('pdForm').reportValidity())return;
+ ev?.preventDefault();if(pdVoz){pdMensaje('Pulsa Detener antes de generar la planificación.');return}if(!pdPermitido()||!pdListo||pdBusy||!$('pdForm').reportValidity())return;
  const owner=authSession.user.id,datos=pdDatos();if(!Object.values(datos).some(Boolean)){pdMensaje('Escribe al menos un bloque para generar la planificación.');return}
  const fecha=pdDia,turno=pdTurnoActual;pdBloqueo(true);pdOcultarInforme();pdMensaje('Guardando y generando planificación…');
  try{
@@ -2167,6 +2170,55 @@ async function pdGenerarInforme(ev){
  finally{if(pdPermitido()&&owner===authSession.user.id)pdBloqueo(false)}
 }
 async function pdCopiar(){if(!pdPermitido()||$('pdInforme').hidden)return;try{await navigator.clipboard.writeText($('pdTexto').value);$('pdCopia').textContent='Copiado. Pégalo en WhatsApp.'}catch(e){$('pdTexto').focus();$('pdTexto').select();$('pdCopia').textContent='Selecciona el texto y pulsa Copiar.'}}
+
+let pdVoz=null;
+function pdVozSoportada(){return window.SpeechRecognition||window.webkitSpeechRecognition}
+function pdVozPreparar(){
+ const disponible=!!pdVozSoportada();
+ document.querySelectorAll('[data-pd-voz]').forEach(b=>{b.hidden=!disponible});
+ $('pdVozAyuda').textContent=disponible?'Puedes dictar cada bloque. Revisa los equipos, números y porcentajes antes de generar.':'Para dictar, toca un bloque y usa el micrófono del teclado de tu celular.';
+}
+function pdVozPintar(){
+ const activa=!!pdVoz;
+ document.querySelectorAll('[data-pd-voz]').forEach(b=>{const este=activa&&b.dataset.pdVoz===pdVoz.id;b.disabled=pdBusy||!pdListo||(activa&&!este)||(este&&pdVoz.terminando);b.textContent=este?(pdVoz.terminando?'Terminando…':'■ Detener'):'🎙 Dictar';b.setAttribute('aria-pressed',String(este))});
+ $('pdFecha').disabled=pdBusy||activa;$('pdTurno').disabled=pdBusy||activa;$('pdGenerar').disabled=pdBusy||!pdListo||activa;
+ for(const [,id]of PD_BLOQUES)$(id).readOnly=activa&&pdVoz.id===id;
+}
+function pdVozCerrar(ctx,mensaje){
+ if(pdVoz!==ctx)return;clearTimeout(ctx.timer);pdVoz=null;pdVozPintar();$('pdVozEstado').textContent=mensaje||'Dictado terminado. Puedes revisar y corregir el texto.';
+}
+function pdVozDetener(cancelar=false){
+ const ctx=pdVoz;if(!ctx)return;
+ if(cancelar){pdVozCerrar(ctx,'');try{ctx.rec.abort()}catch(e){}$('pdVozEstado').textContent='';return}
+ ctx.terminando=true;pdVozPintar();
+ try{ctx.rec.stop();ctx.timer=setTimeout(()=>{if(pdVoz===ctx){pdVozCerrar(ctx);try{ctx.rec.abort()}catch(e){}}},2500)}catch(e){pdVozCerrar(ctx)}
+}
+function pdDictar(id){
+ if(!pdPermitido()||pdBusy||!pdListo||!PD_BLOQUES.some(x=>x[1]===id))return;
+ if(pdVoz){if(pdVoz.id===id)pdVozDetener();return}
+ const Speech=pdVozSoportada();if(!Speech){pdVozPreparar();return}
+ let rec;try{rec=new Speech()}catch(e){$('pdVozEstado').textContent='No se pudo iniciar el dictado. Usa el micrófono del teclado.';return}
+ const field=$(id),base=field.value,ctx={rec,id,base,owner:authSession.user.id,fecha:pdDia,turno:pdTurnoActual,terminando:false,error:false,timer:null};
+ rec.lang='es-CL';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+ pdVoz=ctx;pdOcultarInforme();pdVozPintar();$('pdVozEstado').textContent='Activando micrófono…';
+ rec.onstart=()=>{if(pdVoz===ctx)$('pdVozEstado').textContent='Escuchando. Habla y pulsa Detener al terminar.'};
+ rec.onresult=event=>{
+  if(pdVoz!==ctx||!pdPermitido()||authSession.user.id!==ctx.owner||pdDia!==ctx.fecha||pdTurnoActual!==ctx.turno)return;
+  const partes=[];for(let i=0;i<event.results.length;i++){const t=event.results[i][0]?.transcript;if(t)partes.push(t.trim())}
+  const texto=partes.join(' ');if(!texto)return;
+  const completo=ctx.base+(ctx.base&&!/\s$/.test(ctx.base)?'\n':'')+texto;
+  const limite=field.maxLength>0?field.maxLength:12000;field.value=completo.slice(0,limite);pdOcultarInforme();
+  if(completo.length>limite){ctx.error=true;$('pdVozEstado').textContent='El bloque llegó al máximo de texto. Revisa lo dictado.';pdVozDetener()}
+ };
+ rec.onerror=event=>{
+  if(pdVoz!==ctx)return;ctx.error=true;
+  const mensajes={'not-allowed':'Permite el acceso al micrófono en tu navegador para dictar.','service-not-allowed':'El navegador no habilitó el dictado. Usa el micrófono del teclado.','audio-capture':'No se detectó un micrófono disponible.','no-speech':'No se detectó voz. Pulsa Dictar para volver a intentar.','network':'No se pudo conectar el dictado. Revisa tu conexión y vuelve a intentar.','language-not-supported':'Este navegador no admite el idioma del dictado. Usa el micrófono del teclado.'};
+  const mensaje=mensajes[event.error]||'El dictado se interrumpió. Revisa el texto e intenta nuevamente.';pdVozCerrar(ctx,mensaje);try{rec.abort()}catch(e){}
+ };
+ rec.onend=()=>{if(pdVoz===ctx)pdVozCerrar(ctx,ctx.error?$('pdVozEstado').textContent:undefined)};
+ try{rec.start()}catch(e){pdVozCerrar(ctx,'No se pudo activar el micrófono. Revisa sus permisos e intenta otra vez.')}
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pdVozDetener(true)});
 
 init();
 showView("home");
