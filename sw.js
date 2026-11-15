@@ -1,4 +1,4 @@
-const CACHE='operaciones-ddh-oficial-20261115-planificacion';
+const CACHE='operaciones-ddh-oficial-20261115-planificacion-simple';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-ddh-realista-192.png','./icon-ddh-realista-512.png','./config.js'];
 self.addEventListener('install',e=>{
  self.skipWaiting();
