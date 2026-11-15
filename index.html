@@ -224,6 +224,7 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <button id="nav-reparacion" onclick="showView('reparacion')">Reparación / mantención camioneta</button>
 <button id="nav-flota" onclick="showView('flota')">Equipos Flota / Sondas</button>
 <button data-admin-only hidden id="nav-proyeccion" onclick="showView('proyeccion')">Proyección equipos</button>
+<button data-plan-personal hidden id="nav-planificacion" onclick="showView('planificacion')">Planificación diaria</button>
 <button data-admin-only hidden id="nav-materiales" onclick="showView('materiales')">Materiales críticos</button>
 <button id="nav-coronas" onclick="showView('coronas')">Rebaje de Coronas</button>
 <button data-admin-only hidden id="nav-horas" onclick="showView('horas')">Horas a descuento</button>
@@ -237,6 +238,8 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <h2>Menú principal</h2>
 <div class="note" style="margin-bottom:16px">Seleccione una función para comenzar.</div>
 <div class="home-grid">
+<button data-plan-personal hidden class="home-card" onclick="showView('planificacion')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h3M14 15h3M7 18h3"/></svg></span><strong>Planificación diaria</strong><span>Actividades críticas y programa para WhatsApp.</span></button>
+
 <button class="home-card" onclick="showView('traslado')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v10H3z M14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><strong>Traslado de equipo</strong><span>Solicitud, controles, PDF y correo.</span></button>
 <button class="home-card" onclick="showView('srm')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l-3 4 3 4-3 4 7 6 7-6-3-4 3-4-3-4-4 3-4-3z"/><circle cx="12" cy="12" r="3"/><path d="M8 7l8 10M16 7L8 17"/></svg></span><strong>Tricono SRM</strong><span>Preparación de correo SRM.</span></button>
 <button class="home-card" onclick="showView('devolucion')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l4-18 4 18M6 21h12M9 8h6M8 13h8M7 18h10M12 3v18"/></svg></span><strong>Devolución de plataforma</strong><span>Verificación, fotografías, PDF y correo.</span></button>
@@ -408,6 +411,28 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 </div>
 </section>
 
+<section id="view-planificacion" class="hidden"><div class="panel">
+<div class="module-head"><h2>Planificación diaria</h2><button class="btn btn-white" onclick="showView('home')">← Volver</button></div>
+<p class="muted">Tu espacio personal para preparar y compartir el programa diario.</p>
+<div class="grid"><label for="pdFecha">Fecha</label><input id="pdFecha" type="date" onchange="pdCambiarDia()"><label for="pdTurno">Turno</label><select id="pdTurno" onchange="pdCambiarDia()"><option>A</option><option>B</option></select></div>
+<div class="actions"><button class="btn btn-white" id="pdRecargar" onclick="pdCargar()">Actualizar listado</button><button class="btn btn-blue" id="pdGenerar" onclick="pdGenerarInforme()" disabled>Generar informe</button></div>
+<p id="pdMensaje" role="status" aria-live="polite"></p>
+<details id="pdEditor" open><summary style="font-weight:700;color:#153f6d;cursor:pointer;padding:12px 0">Agregar o editar actividad</summary>
+<form id="pdForm" onsubmit="pdGuardar(event)"><h3 id="pdTituloForm">Nueva actividad</h3><div class="grid">
+<label for="pdCategoria">Categoría</label><select id="pdCategoria" onchange="pdCategoriaCambio()"><option>Agua</option><option>Petróleo</option><option>Mantención</option><option>Muestras</option><option>Limpieza de planta</option><option>Traslados e instalaciones</option><option>Otros</option></select>
+<label for="pdEquipo">Equipo</label><input id="pdEquipo" list="pdEquipos" maxlength="80" placeholder="Ej.: CH1-162 (opcional)"><datalist id="pdEquipos"></datalist>
+<label for="pdActividad">Actividad</label><textarea id="pdActividad" maxlength="1500" required placeholder="Detalle del trabajo o requerimiento"></textarea>
+<label for="pdResponsable">Responsable</label><input id="pdResponsable" list="pdResponsables" maxlength="150" placeholder="Supervisor o persona a cargo"><datalist id="pdResponsables"><option>Miguel Araya</option><option>William Hidalgo</option><option>Jorge Lazo</option><option>Ignacio Morales</option><option>Víctor Orozco</option><option>Cristian Pérez</option><option>Rodrigo Salas</option></datalist>
+<label for="pdPorcentaje" id="pdPorcentajeLabel">Nivel disponible (%)</label><input id="pdPorcentaje" type="number" min="0" max="100" step="1" placeholder="Opcional">
+<label for="pdEstado">Estado</label><select id="pdEstado"><option>Pendiente</option><option>En ejecución</option><option>Terminada</option></select>
+<label for="pdPrioridad">Primera prioridad</label><input id="pdPrioridad" type="checkbox" style="width:24px;height:24px">
+<label for="pdCritica">Actividad crítica</label><input id="pdCritica" type="checkbox" style="width:24px;height:24px" onchange="pdCriticaCambio()">
+<label for="pdControles" id="pdControlesLabel" hidden>Controles necesarios</label><textarea id="pdControles" maxlength="1500" hidden placeholder="Controles y coordinaciones para ejecutar la actividad"></textarea>
+</div><div class="actions"><button class="btn btn-light" id="pdGuardar" type="submit">Guardar actividad</button><button class="btn btn-white" type="button" onclick="pdNueva()">Cancelar / Nueva</button></div></form></details>
+<div id="pdResumen" style="margin-top:20px"></div><div id="pdListado"></div>
+<div id="pdInforme" hidden style="margin-top:24px"><h3>Informe para WhatsApp</h3><p>Incluye las actividades guardadas de la fecha y turno seleccionados.</p><textarea id="pdTexto" readonly aria-label="Informe de planificación" style="min-height:360px;white-space:pre-wrap"></textarea><div class="actions"><button class="btn btn-blue" onclick="pdCopiar()">Copiar para WhatsApp</button></div><p id="pdCopia" role="status"></p></div>
+</div></section>
+
 <section id="view-materiales" class="hidden"><div class="panel">
 <div class="module-head"><h2>Control de Materiales Críticos</h2><button class="btn btn-white" onclick="showView('home')">← Volver</button></div>
 <div class="mc-menu"><button onclick="mcShowSection('crear')">＋ Crear ítem</button><button onclick="mcShowSection('inventario')">▤ Editar / Inventario</button><button onclick="mcShowSection('movimiento')">⇄ Ingreso / salida</button><button onclick="mcShowSection('estado')">◉ Ver estado de materiales</button><button onclick="mcShowSection('historial')">Historial de cambios</button></div><div class="mc-section" id="mcSecCrear" hidden><h3>Crear ítem y definir stock crítico</h3><div class="grid">
@@ -571,17 +596,19 @@ function fechaHoy(){return fechaCorta(hoyISO())}
 const EQUIPOS_CRONOS=["CH1-83", "CH1-133", "CH1-135", "CH1-140", "CH1-141", "CH1-142", "CH1-143", "CH1-154", "CH1-155", "CH1-156", "CH1-159", "CH1-160", "CH1-161", "CH1-162", "CH9-63", "CH1-120", "CH1-144", "CH1-158", "CH1-146"];
 
 function isAdmin(){return authProfile?.role==='admin'&&authProfile?.status==='approved'}
-function applyAdminVisibility(){document.querySelectorAll('[data-admin-only]').forEach(e=>e.hidden=!isAdmin())}
+function applyAdminVisibility(){document.querySelectorAll('[data-admin-only]').forEach(e=>e.hidden=!isAdmin());pdVisibilidad()}
 function showView(v){
+if(v==='planificacion'&&!pdPermitido()){alert('Acceso exclusivo de Gabriel.');return}
 if(['minuta','proyeccion','materiales','horas'].includes(v)&&!isAdmin()){alert('Acceso exclusivo para administradores');return}
 
-const views=["home","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"];
+const views=["planificacion","home","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"];
 views.forEach(x=>$("view-"+x)?.classList.toggle("hidden",x!==v));
-["traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"].forEach(x=>$("nav-"+x)?.classList.toggle("active",x===v));
+["planificacion","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"].forEach(x=>$("nav-"+x)?.classList.toggle("active",x===v));
 if(v==="historial")cargarHistorial();
 if(v==="coronas")cargarCoronas();
 if(v==="horas")hdCargar();
 if(v==="materiales")cargarMateriales();
+if(v==="planificacion")pdAbrir();
 window.scrollTo({top:0,behavior:"smooth"});
 }
 function init(){
@@ -2069,6 +2096,102 @@ async function ahEliminar(tabla,id){
  try{await rpc('ddh_pruebas_admin_historial',{p_tabla:tabla,p_id:String(id),p_version:r.updated_at,p_accion:'eliminar',p_datos:{}});await ahRecargar(tabla);alert('Registro eliminado del historial.')}
  catch(e){alert('No se pudo eliminar: '+e.message)}
 }
+
+// Planificación personal. La autorización definitiva se aplica también mediante RLS.
+const PD_USUARIO='53193994-fdc1-400c-a7d6-d4b40570d765';
+const PD_CATEGORIAS=['Agua','Petróleo','Mantención','Muestras','Limpieza de planta','Traslados e instalaciones','Otros'];
+let pdItems=[],pdEdicion=null,pdBusy=false,pdCarga=0,pdDia='',pdTurnoActual='',pdListo=false;
+function pdPermitido(){return authSession?.user?.id===PD_USUARIO&&authProfile?.status==='approved'&&isAdmin()}
+function pdVisibilidad(){
+ document.querySelectorAll('[data-plan-personal]').forEach(e=>e.hidden=!pdPermitido());
+ if(!pdPermitido()){
+  pdCarga++;pdItems=[];pdEdicion=null;pdListo=false;pdDia='';pdTurnoActual='';
+  const estabaAbierta=!$('view-planificacion').classList.contains('hidden');$('view-planificacion').classList.add('hidden');$('pdForm').reset();$('pdListado').textContent='';$('pdResumen').textContent='';$('pdTexto').value='';$('pdInforme').hidden=true;$('pdMensaje').textContent='';if(estabaAbierta)showView('home');
+ }
+}
+function pdFechaHoy(){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function pdAbrir(){
+ if(!pdPermitido())return;
+ $('pdEquipos').innerHTML=EQUIPOS_CRONOS.map(x=>'<option value="'+esc(x)+'"></option>').join('');
+ if(!$('pdFecha').value)$('pdFecha').value=pdFechaHoy();
+ pdCargar();
+}
+function pdMensaje(t){$('pdMensaje').textContent=t}
+function pdBloqueo(on){
+ pdBusy=on;document.querySelectorAll('#pdForm input,#pdForm select,#pdForm textarea,#pdForm button').forEach(e=>e.disabled=on);
+ $('pdFecha').disabled=on;$('pdTurno').disabled=on;$('pdRecargar').disabled=on;
+ document.querySelectorAll('#pdListado button').forEach(e=>e.disabled=on);$('pdGenerar').disabled=on||!pdListo;
+}
+async function pdRequest(query='',opts={}){
+ if(!pdPermitido())throw Error('Acceso exclusivo de Gabriel.');
+ const r=await fetch(AUTH_PROJECT_URL+'/rest/v1/ddh_planificacion_diaria'+query,{...opts,cache:'no-store',headers:{...authHeaders(),Authorization:'Bearer '+await validToken(),Prefer:'return=representation',...(opts.headers||{})}});
+ const t=await r.text();let data=null;try{data=t?JSON.parse(t):null}catch(e){throw Error('Respuesta inválida del servidor.')}
+ if(!r.ok)throw Error(data?.message||'No se pudo completar la operación ('+r.status+').');
+ return data;
+}
+function pdTieneCambios(){return !!pdEdicion||['pdActividad','pdEquipo','pdResponsable','pdControles','pdPorcentaje'].some(id=>$(id).value.trim())||$('pdCritica').checked||$('pdPrioridad').checked}
+function pdCambiarDia(){
+ if(pdTieneCambios()&&!confirm('Hay una actividad sin guardar. ¿Cambiar fecha o turno y descartar el formulario?')){$('pdFecha').value=pdDia;$('pdTurno').value=pdTurnoActual;return}
+ pdNueva();pdCargar();
+}
+async function pdCargar(){
+ if(!pdPermitido()||pdBusy)return;
+ const fecha=$('pdFecha').value,turno=$('pdTurno').value;
+ if(!fecha){pdMensaje('Seleccione una fecha.');pdListo=false;$('pdGenerar').disabled=true;return}
+ const ticket=++pdCarga,owner=authSession.user.id;pdDia=fecha;pdTurnoActual=turno;pdListo=false;pdItems=[];pdRender();$('pdInforme').hidden=true;$('pdTexto').value='';$('pdGenerar').disabled=true;pdMensaje('Cargando planificación…');
+ try{
+  const rows=await pdRequest('?select=*&usuario=eq.'+owner+'&fecha=eq.'+encodeURIComponent(fecha)+'&turno=eq.'+turno+'&order=creado_en.asc&limit=1001');
+  if(ticket!==pdCarga||!pdPermitido())return;
+  if(rows.length>1000)throw Error('Hay más de 1.000 actividades. No se generará un informe incompleto.');
+  pdItems=rows;pdListo=true;pdRender();$('pdGenerar').disabled=false;pdMensaje(rows.length?'Planificación actualizada.':'Sin actividades para esta fecha y turno. Agregue la primera.');
+ }catch(e){if(ticket===pdCarga&&pdPermitido())pdMensaje('No se pudo cargar: '+e.message)}
+}
+function pdCategoriaCambio(){const on=['Agua','Petróleo'].includes($('pdCategoria').value);$('pdPorcentaje').hidden=!on;$('pdPorcentajeLabel').hidden=!on}
+function pdCriticaCambio(){const on=$('pdCritica').checked;$('pdControles').hidden=!on;$('pdControlesLabel').hidden=!on;$('pdControles').required=on}
+function pdNueva(){if(pdBusy)return;pdEdicion=null;$('pdForm').reset();$('pdTituloForm').textContent='Nueva actividad';$('pdGuardar').textContent='Guardar actividad';pdCategoriaCambio();pdCriticaCambio()}
+function pdEditar(id){
+ if(!pdPermitido()||pdBusy)return;const row=pdItems.find(x=>x.id===id);if(!row)return;
+ if(pdTieneCambios()&&!confirm('¿Descartar el formulario actual para editar esta actividad?'))return;
+ pdEdicion=row;
+ for(const [field,key] of Object.entries({pdCategoria:'categoria',pdEquipo:'equipo',pdActividad:'actividad',pdResponsable:'responsable',pdPorcentaje:'porcentaje',pdEstado:'estado',pdControles:'controles'}))$(field).value=row[key]??'';
+ $('pdCritica').checked=row.critica;$('pdPrioridad').checked=row.prioridad;pdCategoriaCambio();pdCriticaCambio();$('pdEditor').open=true;$('pdTituloForm').textContent='Editar actividad';$('pdGuardar').textContent='Guardar cambios';$('pdEditor').scrollIntoView({behavior:'smooth',block:'start'});$('pdActividad').focus();
+}
+async function pdGuardar(ev){
+ ev.preventDefault();if(!pdPermitido()||pdBusy||!$('pdForm').reportValidity())return;
+ if(!pdListo){pdMensaje('Actualice el listado antes de guardar.');return}
+ const owner=authSession.user.id;
+ const categoria=$('pdCategoria').value,critica=$('pdCritica').checked,actividad=$('pdActividad').value.trim(),controles=critica?$('pdControles').value.trim():'';
+ if(!actividad||critica&&!controles){pdMensaje('Complete la actividad y los controles si es crítica.');return}
+ const body={fecha:pdDia,turno:pdTurnoActual,categoria,equipo:$('pdEquipo').value.trim(),actividad,responsable:$('pdResponsable').value.trim(),prioridad:$('pdPrioridad').checked,critica,controles,porcentaje:['Agua','Petróleo'].includes(categoria)&&$('pdPorcentaje').value!==''?Number($('pdPorcentaje').value):null,estado:$('pdEstado').value};
+ const edit=pdEdicion;pdBloqueo(true);pdMensaje('Guardando actividad…');
+ try{
+  const rows=await pdRequest(edit?'?id=eq.'+edit.id+'&actualizado_en=eq.'+encodeURIComponent(edit.actualizado_en):'',{method:edit?'PATCH':'POST',body:JSON.stringify(body)});
+  if(!pdPermitido()||authSession.user.id!==owner)return;
+  if(!rows?.length)throw Error('La actividad cambió en otra ventana. Actualice el listado y vuelva a editar.');
+  pdBloqueo(false);pdNueva();await pdCargar();if(pdListo)pdMensaje('Actividad guardada correctamente.');
+ }catch(e){if(pdPermitido())pdMensaje('No se confirmó el guardado: '+e.message+' El formulario conserva sus datos.')}
+ finally{pdBloqueo(false)}
+}
+async function pdEliminar(id){
+ if(!pdPermitido()||pdBusy)return;const row=pdItems.find(x=>x.id===id);if(!row||!confirm('¿Eliminar esta actividad?\n'+row.equipo+' · '+row.actividad))return;
+ pdBloqueo(true);pdMensaje('Eliminando…');
+ try{const rows=await pdRequest('?id=eq.'+row.id+'&actualizado_en=eq.'+encodeURIComponent(row.actualizado_en),{method:'DELETE'});if(!pdPermitido())return;if(!rows?.length)throw Error('La actividad cambió. Actualice el listado.');pdBloqueo(false);if(pdEdicion?.id===id)pdNueva();await pdCargar()}
+ catch(e){if(pdPermitido())pdMensaje('No se pudo eliminar: '+e.message)}finally{pdBloqueo(false)}
+}
+function pdOrden(a,b){return Number(b.critica)-Number(a.critica)||Number(b.prioridad)-Number(a.prioridad)||a.creado_en.localeCompare(b.creado_en)}
+function pdRender(){
+ $('pdResumen').textContent=pdItems.length?pdItems.length+' actividades · '+pdItems.filter(x=>x.critica).length+' críticas · '+pdItems.filter(x=>x.prioridad).length+' de primera prioridad · '+pdItems.filter(x=>x.estado==='Terminada').length+' terminadas':'';
+ const grupos=[['Actividades críticas',pdItems.filter(x=>x.critica)],...PD_CATEGORIAS.map(c=>[c,pdItems.filter(x=>!x.critica&&x.categoria===c)])];
+ $('pdListado').innerHTML=grupos.filter(g=>g[1].length).map(([titulo,rows])=>'<h3>'+esc(titulo)+'</h3>'+rows.slice().sort(pdOrden).map(r=>'<article style="padding:16px;margin:10px 0;border:1px solid #d6e0e9;border-left:6px solid '+(r.critica?'#c13239':r.prioridad?'#e9af28':r.estado==='Terminada'?'#2d8656':'#153f6d')+';border-radius:10px;background:'+(r.critica?'#fff2f2':'#f8fafc')+'"><div><strong>'+esc(r.equipo||r.categoria)+'</strong> · '+esc(r.estado)+(r.prioridad?' · <strong>PRIMERA PRIORIDAD</strong>':'')+'</div><p style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(r.actividad)+(r.porcentaje!==null?' · Nivel disponible: '+esc(r.porcentaje)+'%':'')+'</p>'+(r.responsable?'<p>Responsable: '+esc(r.responsable)+'</p>':'')+(r.critica?'<p style="white-space:pre-wrap;overflow-wrap:anywhere"><strong>Controles:</strong> '+esc(r.controles)+'</p>':'')+'<div class="actions"><button class="btn btn-white" onclick="pdEditar(\''+r.id+'\')">Editar / Estado</button><button class="btn btn-white" onclick="pdEliminar(\''+r.id+'\')">Eliminar</button></div></article>').join('')).join('');
+}
+function pdTextoInforme(rows,fecha,turno){
+ const lines=['*PLANIFICACIÓN DIARIA · '+fechaCorta(fecha)+' · TURNO '+turno+'*'];
+ const grupos=[['🔴 ACTIVIDADES CRÍTICAS',rows.filter(x=>x.critica)],...PD_CATEGORIAS.map(c=>[c.toUpperCase(),rows.filter(x=>!x.critica&&x.categoria===c)])];
+ for(const [titulo,items] of grupos){if(!items.length)continue;lines.push('','*'+titulo+'*');for(const r of items.slice().sort(pdOrden)){lines.push('• '+(r.equipo?r.equipo+': ':'')+r.actividad+(r.porcentaje!==null?' · '+r.porcentaje+'% disponible':'')+(r.prioridad?' — *PRIMERA PRIORIDAD*':''));if(r.responsable)lines.push('  Responsable: '+r.responsable);if(r.critica)lines.push('  Controles: '+r.controles);if(r.estado!=='Pendiente')lines.push('  Estado: '+r.estado)}}
+ if(!rows.length)lines.push('','Sin actividades registradas.');return lines.join('\n');
+}
+function pdGenerarInforme(){if(!pdPermitido()||!pdListo||pdBusy)return;if(pdTieneCambios()){pdMensaje('Guarde o cancele la actividad del formulario antes de generar el informe.');return}$('pdTexto').value=pdTextoInforme(pdItems,pdDia,pdTurnoActual);$('pdInforme').hidden=false;$('pdCopia').textContent='';$('pdInforme').scrollIntoView({behavior:'smooth',block:'start'})}
+async function pdCopiar(){if(!pdPermitido()||!pdListo)return;try{await navigator.clipboard.writeText($('pdTexto').value);$('pdCopia').textContent='Informe copiado. Ya puede pegarlo en WhatsApp.'}catch(e){$('pdTexto').focus();$('pdTexto').select();$('pdCopia').textContent='Mantenga presionado el texto y seleccione Copiar.'}}
 
 init();
 showView("home");
