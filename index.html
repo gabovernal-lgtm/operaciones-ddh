@@ -226,7 +226,6 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <button id="nav-reparacion" onclick="showView('reparacion')">Reparación / mantención camioneta</button>
 <button id="nav-flota" onclick="showView('flota')">Equipos Flota / Sondas</button>
 <button data-admin-only hidden id="nav-proyeccion" onclick="showView('proyeccion')">Proyección equipos</button>
-<button data-plan-personal hidden id="nav-planificacion" onclick="showView('planificacion')">Planificación diaria</button>
 <button data-admin-only hidden id="nav-materiales" onclick="showView('materiales')">Materiales críticos</button>
 <button id="nav-coronas" onclick="showView('coronas')">Rebaje de Coronas</button>
 <button data-admin-only hidden id="nav-horas" onclick="showView('horas')">Horas a descuento</button>
@@ -240,7 +239,6 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 <h2>Menú principal</h2>
 <div class="note" style="margin-bottom:16px">Seleccione una función para comenzar.</div>
 <div class="home-grid">
-<button data-plan-personal hidden class="home-card" onclick="showView('planificacion')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 11h18M7 15h3M14 15h3M7 18h3"/></svg></span><strong>Planificación diaria</strong><span>Actividades críticas y programa para WhatsApp.</span></button>
 
 <button class="home-card" onclick="showView('traslado')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v10H3z M14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><strong>Traslado de equipo</strong><span>Solicitud, controles, PDF y correo.</span></button>
 <button class="home-card" onclick="showView('srm')"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3l-3 4 3 4-3 4 7 6 7-6-3-4 3-4-3-4-4 3-4-3z"/><circle cx="12" cy="12" r="3"/><path d="M8 7l8 10M16 7L8 17"/></svg></span><strong>Tricono SRM</strong><span>Preparación de correo SRM.</span></button>
@@ -413,25 +411,6 @@ input:focus,textarea:focus,select:focus{outline-color:#f0df9e!important;border-c
 </div>
 </section>
 
-<section id="view-planificacion" class="hidden"><div class="panel">
-<div class="module-head"><h2>Planificación diaria</h2><button class="btn btn-white" onclick="showView('home')">← Volver</button></div>
-<p>Escribe o pega los datos en cada bloque. Deja vacío lo que no corresponda.</p>
-<div class="grid"><label for="pdFecha">Fecha</label><input id="pdFecha" type="date" required onchange="pdCambiarDia()"><label for="pdTurno">Turno</label><select id="pdTurno" onchange="pdCambiarDia()"><option>A</option><option>B</option></select></div>
-<form id="pdForm" onsubmit="pdGenerarInforme(event)" oninput="pdOcultarInforme()">
-<p id="pdVozAyuda"></p><p id="pdVozEstado" role="status" aria-live="polite"></p><div class="pd-bloques">
-<div class="pd-bloque"><label for="pdAgua">Agua y limpieza<textarea id="pdAgua" maxlength="12000" rows="4" placeholder="83: 0%, primera prioridad&#10;160: 25%&#10;Limpieza de planta 161"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdAgua" aria-pressed="false" aria-label="Dictar agua y limpieza" onclick="pdDictar('pdAgua')">🎙 Dictar</button></div>
-<div class="pd-bloque"><label for="pdPetroleo">Petróleo<textarea id="pdPetroleo" maxlength="12000" rows="4" placeholder="Al pedido. Ideal rellenar los equipos durante el día."></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdPetroleo" aria-pressed="false" aria-label="Dictar petróleo" onclick="pdDictar('pdPetroleo')">🎙 Dictar</button></div>
-<div class="pd-bloque"><label for="pdMantencion">Mantención<textarea id="pdMantencion" maxlength="12000" rows="4" placeholder="120: mantenimiento preventivo&#10;142: fuga en acople rápido de mesa sacatestigo"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdMantencion" aria-pressed="false" aria-label="Dictar mantención" onclick="pdDictar('pdMantencion')">🎙 Dictar</button></div>
-<div class="pd-bloque"><label for="pdMuestras">Muestras<textarea id="pdMuestras" maxlength="12000" rows="4" placeholder="83: segundo pallet&#10;159: fin de pozo"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdMuestras" aria-pressed="false" aria-label="Dictar muestras" onclick="pdDictar('pdMuestras')">🎙 Dictar</button></div>
-<div class="pd-bloque"><label for="pdTrabajos">Trabajos por supervisor<textarea id="pdTrabajos" maxlength="12000" rows="5" placeholder="Miguel Araya: traslado e instalación de 162&#10;Jorge Lazo: instalación de 144"></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdTrabajos" aria-pressed="false" aria-label="Dictar trabajos por supervisor" onclick="pdDictar('pdTrabajos')">🎙 Dictar</button></div>
-<div class="pd-bloque"><label for="pdCriticas" class="pd-criticas">Actividades críticas y controles<textarea id="pdCriticas" maxlength="12000" rows="5" placeholder="Traslado de 162: validar ruta, segregar el área y mantener supervisión durante la maniobra."></textarea></label><button type="button" class="btn btn-white pd-dictar" data-pd-voz="pdCriticas" aria-pressed="false" aria-label="Dictar actividades críticas y controles" onclick="pdDictar('pdCriticas')">🎙 Dictar</button></div>
-</div>
-<div class="actions"><button id="pdGenerar" class="btn btn-light" type="submit" disabled>Generar planificación</button></div>
-</form>
-<p id="pdMensaje" role="status" aria-live="polite"></p>
-<div id="pdInforme" hidden><h3>Planificación para WhatsApp</h3><textarea id="pdTexto" readonly aria-label="Planificación generada" style="min-height:360px;white-space:pre-wrap"></textarea><div class="actions"><button class="btn btn-blue" onclick="pdCopiar()">Copiar para WhatsApp</button></div><p id="pdCopia" role="status"></p></div>
-</div></section>
-
 <section id="view-materiales" class="hidden"><div class="panel">
 <div class="module-head"><h2>Control de Materiales Críticos</h2><button class="btn btn-white" onclick="showView('home')">← Volver</button></div>
 <div class="mc-menu"><button onclick="mcShowSection('crear')">＋ Crear ítem</button><button onclick="mcShowSection('inventario')">▤ Editar / Inventario</button><button onclick="mcShowSection('movimiento')">⇄ Ingreso / salida</button><button onclick="mcShowSection('estado')">◉ Ver estado de materiales</button><button onclick="mcShowSection('historial')">Historial de cambios</button></div><div class="mc-section" id="mcSecCrear" hidden><h3>Crear ítem y definir stock crítico</h3><div class="grid">
@@ -595,20 +574,17 @@ function fechaHoy(){return fechaCorta(hoyISO())}
 const EQUIPOS_CRONOS=["CH1-83", "CH1-133", "CH1-135", "CH1-140", "CH1-141", "CH1-142", "CH1-143", "CH1-154", "CH1-155", "CH1-156", "CH1-159", "CH1-160", "CH1-161", "CH1-162", "CH9-63", "CH1-120", "CH1-144", "CH1-158", "CH1-146"];
 
 function isAdmin(){return authProfile?.role==='admin'&&authProfile?.status==='approved'}
-function applyAdminVisibility(){document.querySelectorAll('[data-admin-only]').forEach(e=>e.hidden=!isAdmin());pdVisibilidad()}
+function applyAdminVisibility(){document.querySelectorAll('[data-admin-only]').forEach(e=>e.hidden=!isAdmin())}
 function showView(v){
-if(v!=='planificacion')pdVozDetener(true);
-if(v==='planificacion'&&!pdPermitido()){alert('Acceso exclusivo de Gabriel.');return}
 if(['minuta','proyeccion','materiales','horas'].includes(v)&&!isAdmin()){alert('Acceso exclusivo para administradores');return}
 
-const views=["planificacion","home","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"];
+const views=["home","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"];
 views.forEach(x=>$("view-"+x)?.classList.toggle("hidden",x!==v));
-["planificacion","traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"].forEach(x=>$("nav-"+x)?.classList.toggle("active",x===v));
+["traslado","srm","devolucion","minuta","reparacion","flota","proyeccion","materiales","coronas","horas","historial","config"].forEach(x=>$("nav-"+x)?.classList.toggle("active",x===v));
 if(v==="historial")cargarHistorial();
 if(v==="coronas")cargarCoronas();
 if(v==="horas")hdCargar();
 if(v==="materiales")cargarMateriales();
-if(v==="planificacion")pdAbrir();
 window.scrollTo({top:0,behavior:"smooth"});
 }
 function init(){
@@ -2096,129 +2072,6 @@ async function ahEliminar(tabla,id){
  try{await rpc('ddh_pruebas_admin_historial',{p_tabla:tabla,p_id:String(id),p_version:r.updated_at,p_accion:'eliminar',p_datos:{}});await ahRecargar(tabla);alert('Registro eliminado del historial.')}
  catch(e){alert('No se pudo eliminar: '+e.message)}
 }
-
-// Planificación por bloques; acceso personal protegido también en la base de datos.
-const PD_USUARIO='53193994-fdc1-400c-a7d6-d4b40570d765';
-const PD_BLOQUES=[['agua','pdAgua','AGUA Y LIMPIEZA'],['petroleo','pdPetroleo','PETRÓLEO'],['mantencion','pdMantencion','MANTENCIÓN'],['muestras','pdMuestras','MUESTRAS'],['trabajos','pdTrabajos','TRABAJOS POR SUPERVISOR'],['criticas','pdCriticas','🔴 ACTIVIDADES CRÍTICAS Y CONTROLES']];
-let pdBusy=false,pdCarga=0,pdDia='',pdTurnoActual='',pdListo=false,pdVersion=null,pdBase='';
-function pdPermitido(){return authSession?.user?.id===PD_USUARIO&&authProfile?.status==='approved'&&isAdmin()}
-function pdDatos(){return Object.fromEntries(PD_BLOQUES.map(([key,id])=>[key,$(id).value.trim()]))}
-function pdOcultarInforme(){$('pdInforme').hidden=true;$('pdTexto').value='';$('pdCopia').textContent=''}
-function pdVisibilidad(){
- document.querySelectorAll('[data-plan-personal]').forEach(e=>e.hidden=!pdPermitido());
- if(!pdPermitido()){
-  pdVozDetener(true);
-  const abierta=!$('view-planificacion').classList.contains('hidden');pdCarga++;pdListo=false;pdBusy=false;pdVersion=null;pdDia='';pdTurnoActual='';pdBase='';
-  $('pdForm').reset();$('pdFecha').value='';$('pdMensaje').textContent='';pdOcultarInforme();$('view-planificacion').classList.add('hidden');if(abierta)showView('home');
- }
-}
-function pdFechaHoy(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day}
-function pdAbrir(){if(!pdPermitido())return;pdVozPreparar();if(!$('pdFecha').value)$('pdFecha').value=pdFechaHoy();if(!pdListo)pdCargar()}
-function pdMensaje(t){$('pdMensaje').textContent=t}
-function pdBloqueo(on){pdBusy=on;document.querySelectorAll('#pdForm textarea,#pdForm button').forEach(e=>e.disabled=on);$('pdFecha').disabled=on;$('pdTurno').disabled=on;$('pdGenerar').disabled=on||!pdListo;pdVozPintar()}
-async function pdRequest(table,query='',opts={}){
- if(!pdPermitido())throw Error('Acceso exclusivo de Gabriel.');
- const r=await fetch(AUTH_PROJECT_URL+'/rest/v1/'+table+query,{...opts,cache:'no-store',headers:{...authHeaders(),Authorization:'Bearer '+await validToken(),Prefer:'return=representation',...(opts.headers||{})}});
- const t=await r.text();let data;try{data=t?JSON.parse(t):null}catch(e){throw Error('Respuesta inválida del servidor.')}
- if(!r.ok){const error=Error(data?.message||'No se pudo completar la operación ('+r.status+').');error.status=r.status;throw error}return data;
-}
-function pdCambiarDia(){
- if(pdListo&&JSON.stringify(pdDatos())!==pdBase&&!confirm('Hay cambios sin guardar. ¿Cambiar fecha o turno y descartarlos?')){$('pdFecha').value=pdDia;$('pdTurno').value=pdTurnoActual;return}
- pdCargar();
-}
-function pdDesdeActividades(rows){
- const bloques=Object.fromEntries(PD_BLOQUES.map(([key])=>[key,[]]));
- for(const r of rows){const key=r.critica?'criticas':({'Agua':'agua','Limpieza de planta':'agua','Petróleo':'petroleo','Mantención':'mantencion','Muestras':'muestras'}[r.categoria]||'trabajos');
-  let linea=(r.equipo?r.equipo+': ':'')+r.actividad+(r.porcentaje!==null?' · '+r.porcentaje+'% disponible':'')+(r.prioridad?' — PRIMERA PRIORIDAD':'');
-  if(r.responsable)linea+='\nResponsable: '+r.responsable;if(r.critica&&r.controles)linea+='\nControles: '+r.controles;if(r.estado!=='Pendiente')linea+='\nEstado: '+r.estado;bloques[key].push(linea);
- }
- return Object.fromEntries(Object.entries(bloques).map(([k,v])=>[k,v.join('\n\n')]));
-}
-async function pdCargar(){
- if(!pdPermitido()||pdBusy)return;
- if(!$('pdFecha').value){$('pdFecha').value=pdDia;pdMensaje('Seleccione una fecha.');return}
- const ticket=++pdCarga,owner=authSession.user.id,fecha=$('pdFecha').value,turno=$('pdTurno').value;
- pdListo=false;pdVersion=null;pdOcultarInforme();pdBloqueo(true);pdMensaje('Cargando…');
- for(const [,id]of PD_BLOQUES)$(id).value='';
- try{
-  const query='?select=*&usuario=eq.'+owner+'&fecha=eq.'+encodeURIComponent(fecha)+'&turno=eq.'+turno;
-  const rows=await pdRequest('ddh_planificacion_bloques',query);let data=rows[0]||null;
-  if(!data){const anteriores=await pdRequest('ddh_planificacion_diaria',query+'&order=creado_en.asc&limit=1001');if(anteriores.length>1000)throw Error('No se pudo recuperar la planificación completa.');data=pdDesdeActividades(anteriores)}
-  if(ticket!==pdCarga||!pdPermitido()||owner!==authSession.user.id)return;
-  for(const [key,id]of PD_BLOQUES){const text=data[key]||'';if(text.length>12000)throw Error('El bloque '+key+' supera el máximo de texto.');$(id).value=text}
-  pdVersion=rows[0]?.actualizado_en||null;pdDia=fecha;pdTurnoActual=turno;pdBase=JSON.stringify(pdDatos());pdListo=true;pdMensaje('');
- }catch(e){if(ticket===pdCarga&&pdPermitido())pdMensaje('No se pudo cargar: '+e.message+' Vuelva al menú y abra la planificación para reintentar.')}
- finally{if(ticket===pdCarga)pdBloqueo(false)}
-}
-function pdTextoInforme(datos,fecha,turno){
- const lines=['*PLANIFICACIÓN DIARIA · '+fechaCorta(fecha)+' · TURNO '+turno+'*'];
- const orden=[PD_BLOQUES[5],...PD_BLOQUES.slice(0,5)];
- for(const [key,,titulo]of orden){const texto=(datos[key]||'').trim();if(!texto)continue;lines.push('','*'+titulo+'*',texto)}
- return lines.join('\n');
-}
-async function pdGenerarInforme(ev){
- ev?.preventDefault();if(pdVoz){pdMensaje('Pulsa Detener antes de generar la planificación.');return}if(!pdPermitido()||!pdListo||pdBusy||!$('pdForm').reportValidity())return;
- const owner=authSession.user.id,datos=pdDatos();if(!Object.values(datos).some(Boolean)){pdMensaje('Escribe al menos un bloque para generar la planificación.');return}
- const fecha=pdDia,turno=pdTurnoActual;pdBloqueo(true);pdOcultarInforme();pdMensaje('Guardando y generando planificación…');
- try{
-  const query=pdVersion?'?usuario=eq.'+owner+'&fecha=eq.'+encodeURIComponent(fecha)+'&turno=eq.'+turno+'&actualizado_en=eq.'+encodeURIComponent(pdVersion):'';
-  const rows=await pdRequest('ddh_planificacion_bloques',query,{method:pdVersion?'PATCH':'POST',body:JSON.stringify({...datos,fecha,turno})});
-  if(!pdPermitido()||owner!==authSession.user.id)return;
-  if(!rows?.length){const error=Error('La planificación cambió en otra ventana. Copia tus textos antes de volver a abrirla.');error.status=409;throw error}
-  pdVersion=rows[0].actualizado_en;pdBase=JSON.stringify(datos);$('pdTexto').value=pdTextoInforme(datos,fecha,turno);$('pdInforme').hidden=false;pdMensaje('Planificación guardada. Ya puedes copiarla a WhatsApp.');$('pdInforme').scrollIntoView({behavior:'smooth',block:'start'});
- }catch(e){if(pdPermitido()&&owner===authSession.user.id){if(e.status===409)pdListo=false;pdMensaje('No se confirmó el guardado: '+e.message+' Tus textos siguen en los bloques.')}}
- finally{if(pdPermitido()&&owner===authSession.user.id)pdBloqueo(false)}
-}
-async function pdCopiar(){if(!pdPermitido()||$('pdInforme').hidden)return;try{await navigator.clipboard.writeText($('pdTexto').value);$('pdCopia').textContent='Copiado. Pégalo en WhatsApp.'}catch(e){$('pdTexto').focus();$('pdTexto').select();$('pdCopia').textContent='Selecciona el texto y pulsa Copiar.'}}
-
-let pdVoz=null;
-function pdVozSoportada(){return window.SpeechRecognition||window.webkitSpeechRecognition}
-function pdVozPreparar(){
- const disponible=!!pdVozSoportada();
- document.querySelectorAll('[data-pd-voz]').forEach(b=>{b.hidden=!disponible});
- $('pdVozAyuda').textContent=disponible?'Puedes dictar cada bloque. Revisa los equipos, números y porcentajes antes de generar.':'Para dictar, toca un bloque y usa el micrófono del teclado de tu celular.';
-}
-function pdVozPintar(){
- const activa=!!pdVoz;
- document.querySelectorAll('[data-pd-voz]').forEach(b=>{const este=activa&&b.dataset.pdVoz===pdVoz.id;b.disabled=pdBusy||!pdListo||(activa&&!este)||(este&&pdVoz.terminando);b.textContent=este?(pdVoz.terminando?'Terminando…':'■ Detener'):'🎙 Dictar';b.setAttribute('aria-pressed',String(este))});
- $('pdFecha').disabled=pdBusy||activa;$('pdTurno').disabled=pdBusy||activa;$('pdGenerar').disabled=pdBusy||!pdListo||activa;
- for(const [,id]of PD_BLOQUES)$(id).readOnly=activa&&pdVoz.id===id;
-}
-function pdVozCerrar(ctx,mensaje){
- if(pdVoz!==ctx)return;clearTimeout(ctx.timer);pdVoz=null;pdVozPintar();$('pdVozEstado').textContent=mensaje||'Dictado terminado. Puedes revisar y corregir el texto.';
-}
-function pdVozDetener(cancelar=false){
- const ctx=pdVoz;if(!ctx)return;
- if(cancelar){pdVozCerrar(ctx,'');try{ctx.rec.abort()}catch(e){}$('pdVozEstado').textContent='';return}
- ctx.terminando=true;pdVozPintar();
- try{ctx.rec.stop();ctx.timer=setTimeout(()=>{if(pdVoz===ctx){pdVozCerrar(ctx);try{ctx.rec.abort()}catch(e){}}},2500)}catch(e){pdVozCerrar(ctx)}
-}
-function pdDictar(id){
- if(!pdPermitido()||pdBusy||!pdListo||!PD_BLOQUES.some(x=>x[1]===id))return;
- if(pdVoz){if(pdVoz.id===id)pdVozDetener();return}
- const Speech=pdVozSoportada();if(!Speech){pdVozPreparar();return}
- let rec;try{rec=new Speech()}catch(e){$('pdVozEstado').textContent='No se pudo iniciar el dictado. Usa el micrófono del teclado.';return}
- const field=$(id),base=field.value,ctx={rec,id,base,owner:authSession.user.id,fecha:pdDia,turno:pdTurnoActual,terminando:false,error:false,timer:null};
- rec.lang='es-CL';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
- pdVoz=ctx;pdOcultarInforme();pdVozPintar();$('pdVozEstado').textContent='Activando micrófono…';
- rec.onstart=()=>{if(pdVoz===ctx)$('pdVozEstado').textContent='Escuchando. Habla y pulsa Detener al terminar.'};
- rec.onresult=event=>{
-  if(pdVoz!==ctx||!pdPermitido()||authSession.user.id!==ctx.owner||pdDia!==ctx.fecha||pdTurnoActual!==ctx.turno)return;
-  const partes=[];for(let i=0;i<event.results.length;i++){const t=event.results[i][0]?.transcript;if(t)partes.push(t.trim())}
-  const texto=partes.join(' ');if(!texto)return;
-  const completo=ctx.base+(ctx.base&&!/\s$/.test(ctx.base)?'\n':'')+texto;
-  const limite=field.maxLength>0?field.maxLength:12000;field.value=completo.slice(0,limite);pdOcultarInforme();
-  if(completo.length>limite){ctx.error=true;$('pdVozEstado').textContent='El bloque llegó al máximo de texto. Revisa lo dictado.';pdVozDetener()}
- };
- rec.onerror=event=>{
-  if(pdVoz!==ctx)return;ctx.error=true;
-  const mensajes={'not-allowed':'Permite el acceso al micrófono en tu navegador para dictar.','service-not-allowed':'El navegador no habilitó el dictado. Usa el micrófono del teclado.','audio-capture':'No se detectó un micrófono disponible.','no-speech':'No se detectó voz. Pulsa Dictar para volver a intentar.','network':'No se pudo conectar el dictado. Revisa tu conexión y vuelve a intentar.','language-not-supported':'Este navegador no admite el idioma del dictado. Usa el micrófono del teclado.'};
-  const mensaje=mensajes[event.error]||'El dictado se interrumpió. Revisa el texto e intenta nuevamente.';pdVozCerrar(ctx,mensaje);try{rec.abort()}catch(e){}
- };
- rec.onend=()=>{if(pdVoz===ctx)pdVozCerrar(ctx,ctx.error?$('pdVozEstado').textContent:undefined)};
- try{rec.start()}catch(e){pdVozCerrar(ctx,'No se pudo activar el micrófono. Revisa sus permisos e intenta otra vez.')}
-}
-document.addEventListener('visibilitychange',()=>{if(document.hidden)pdVozDetener(true)});
 
 init();
 showView("home");
